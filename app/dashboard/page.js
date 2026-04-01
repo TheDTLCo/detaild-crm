@@ -9,10 +9,10 @@ function TabButton({ label, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`min-w-[110px] rounded-xl px-4 py-3 text-sm font-semibold transition ${
+      className={`min-w-[110px] rounded-2xl px-4 py-3 text-sm font-semibold transition ${
         active
-          ? "bg-teal-500 text-white shadow"
-          : "bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+          ? "bg-teal-500 text-white shadow-lg"
+          : "bg-white/70 text-gray-800 hover:bg-white dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
       }`}
     >
       {label}
@@ -23,12 +23,16 @@ function TabButton({ label, active, onClick }) {
 function StatCard({ label, value, subtext, darkMode, valueClassName = "" }) {
   return (
     <div
-      className={`rounded-2xl p-5 shadow ${
-        darkMode ? "bg-gray-800" : "bg-white"
+      className={`rounded-3xl border p-5 shadow-sm ${
+        darkMode
+          ? "border-white/10 bg-gray-800/90"
+          : "border-black/5 bg-white/90"
       }`}
     >
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className={`mt-2 text-2xl font-bold ${valueClassName}`}>{value}</p>
+      <p className="text-sm uppercase tracking-[0.18em] text-gray-500">{label}</p>
+      <p className={`mt-3 text-3xl font-bold tracking-tight ${valueClassName}`}>
+        {value}
+      </p>
       {subtext ? <p className="mt-2 text-xs text-gray-500">{subtext}</p> : null}
     </div>
   )
@@ -37,12 +41,14 @@ function StatCard({ label, value, subtext, darkMode, valueClassName = "" }) {
 function SectionCard({ title, children, darkMode, rightSlot = null }) {
   return (
     <div
-      className={`rounded-2xl p-5 shadow ${
-        darkMode ? "bg-gray-800" : "bg-white"
+      className={`rounded-3xl border p-5 shadow-sm ${
+        darkMode
+          ? "border-white/10 bg-gray-800/90"
+          : "border-black/5 bg-white/90"
       }`}
     >
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h3 className="text-lg font-semibold">{title}</h3>
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
         {rightSlot}
       </div>
       {children}
@@ -54,7 +60,7 @@ function QuickActionButton({ children, onClick, className = "" }) {
   return (
     <button
       onClick={onClick}
-      className={`rounded-xl px-4 py-3 text-sm font-semibold transition hover:scale-[1.02] ${className}`}
+      className={`rounded-2xl px-4 py-3 text-sm font-semibold transition hover:scale-[1.02] ${className}`}
     >
       {children}
     </button>
@@ -64,13 +70,15 @@ function QuickActionButton({ children, onClick, className = "" }) {
 function StatusBadge({ status }) {
   const classes =
     status === "Booked"
-      ? "bg-blue-500"
+      ? "bg-blue-500/90"
       : status === "In Progress"
-      ? "bg-yellow-500"
-      : "bg-green-500"
+      ? "bg-yellow-400/90 text-black"
+      : "bg-green-500/90"
 
   return (
-    <span className={`rounded-full px-2 py-1 text-xs text-white ${classes}`}>
+    <span
+      className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white ${classes}`}
+    >
       {status}
     </span>
   )
@@ -81,12 +89,45 @@ function PaymentBadge({ paymentStatus }) {
 
   return (
     <span
-      className={`rounded-full px-2 py-1 text-xs text-white ${
-        paid ? "bg-emerald-600" : "bg-red-500"
+      className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${
+        paid ? "bg-emerald-600/90 text-white" : "bg-red-500/90 text-white"
       }`}
     >
       {paymentStatus || "Unpaid"}
     </span>
+  )
+}
+
+function CompactJobRow({ job, onOpen, darkMode }) {
+  const total =
+    job.pricing_breakdown?.reduce(
+      (sum, item) => sum + (parseFloat(item.cost) || 0),
+      0
+    ) || job.price || 0
+
+  return (
+    <button
+      onClick={() => onOpen(job)}
+      className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
+        darkMode
+          ? "border-white/10 bg-white/5 hover:bg-white/10"
+          : "border-black/5 bg-black/[0.03] hover:bg-black/[0.05]"
+      }`}
+    >
+      <div className="min-w-0">
+        <p className="truncate font-semibold">{job.customer_name}</p>
+        <p className="truncate text-sm text-gray-500">
+          {job.vehicle} • {job.job_details?.[0] || "No service detail"}
+        </p>
+      </div>
+
+      <div className="ml-4 flex shrink-0 items-center gap-2">
+        <StatusBadge status={job.status} />
+        <span className="text-sm font-bold text-teal-500">
+          ${total.toFixed(2)}
+        </span>
+      </div>
+    </button>
   )
 }
 
@@ -119,16 +160,24 @@ function JobCard({
   return (
     <div
       onClick={() => onOpen(job)}
-      className={`cursor-pointer rounded-2xl p-4 shadow-md transition hover:shadow-xl ${
-        darkMode ? "bg-gray-800/90" : "bg-white/90"
+      className={`group cursor-pointer overflow-hidden rounded-3xl border shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-2xl ${
+        darkMode
+          ? "border-white/10 bg-gradient-to-b from-gray-800 to-gray-900"
+          : "border-black/5 bg-gradient-to-b from-white to-gray-50"
       }`}
     >
-      <div className="flex flex-col gap-4">
-        <div className="flex items-start justify-between gap-3">
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="truncate text-lg font-semibold">{job.customer_name}</p>
-            <p className="text-sm text-gray-500">{job.vehicle}</p>
-            <p className="mt-1 text-xs text-gray-400">{formattedDate}</p>
+            <p className="truncate text-xl font-bold tracking-tight">
+              {job.customer_name || "Untitled Job"}
+            </p>
+            <p className="text-sm text-gray-500">
+              {job.vehicle || "Vehicle not set"}
+            </p>
+            <p className="mt-2 text-xs uppercase tracking-[0.25em] text-gray-400">
+              {formattedDate}
+            </p>
           </div>
 
           <div className="flex shrink-0 flex-col items-end gap-2">
@@ -137,82 +186,114 @@ function JobCard({
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/10 bg-black/10 p-3">
-          <p className="truncate text-sm font-medium">{primaryDetail}</p>
+        <div
+          className={`mt-5 rounded-2xl border p-4 ${
+            darkMode
+              ? "border-white/10 bg-white/5"
+              : "border-black/5 bg-black/[0.03]"
+          }`}
+        >
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-500">
+            Service
+          </p>
+          <p className="mt-2 text-base font-semibold">{primaryDetail}</p>
+
           {job.job_address && (
-            <p className="mt-1 truncate text-xs text-gray-500">{job.job_address}</p>
+            <>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.25em] text-gray-500">
+                Address
+              </p>
+              <p className="mt-2 truncate text-sm text-gray-500">
+                {job.job_address}
+              </p>
+            </>
           )}
+
           {job.customer_notes && (
-            <p className="mt-2 line-clamp-2 text-xs text-gray-400">
-              Notes: {job.customer_notes}
-            </p>
+            <>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.25em] text-gray-500">
+                Notes
+              </p>
+              <p className="mt-2 line-clamp-2 text-sm text-gray-500">
+                {job.customer_notes}
+              </p>
+            </>
           )}
         </div>
 
         {(beforePreview || afterPreview) && (
-          <div
-            className={`rounded-2xl border p-3 ${
-              darkMode
-                ? "border-gray-700 bg-gray-900"
-                : "border-gray-200 bg-gray-50"
-            }`}
-          >
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
-              Before / After
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="mb-2 text-xs font-medium text-gray-500">Before</p>
-                {beforePreview ? (
-                  <img
-                    src={beforePreview}
-                    alt="Before preview"
-                    className="h-24 w-full rounded-xl border object-cover"
-                  />
-                ) : (
-                  <div className="flex h-24 items-center justify-center rounded-xl border border-dashed text-xs text-gray-400">
-                    None
-                  </div>
-                )}
-              </div>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div
+              className={`rounded-2xl border p-2 ${
+                darkMode
+                  ? "border-white/10 bg-white/5"
+                  : "border-black/5 bg-black/[0.03]"
+              }`}
+            >
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500">
+                Before
+              </p>
+              {beforePreview ? (
+                <img
+                  src={beforePreview}
+                  alt="Before preview"
+                  className="h-24 w-full rounded-xl object-cover"
+                />
+              ) : (
+                <div className="flex h-24 items-center justify-center rounded-xl border border-dashed text-xs text-gray-400">
+                  None
+                </div>
+              )}
+            </div>
 
-              <div>
-                <p className="mb-2 text-xs font-medium text-gray-500">After</p>
-                {afterPreview ? (
-                  <img
-                    src={afterPreview}
-                    alt="After preview"
-                    className="h-24 w-full rounded-xl border object-cover"
-                  />
-                ) : (
-                  <div className="flex h-24 items-center justify-center rounded-xl border border-dashed text-xs text-gray-400">
-                    None
-                  </div>
-                )}
-              </div>
+            <div
+              className={`rounded-2xl border p-2 ${
+                darkMode
+                  ? "border-white/10 bg-white/5"
+                  : "border-black/5 bg-black/[0.03]"
+              }`}
+            >
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500">
+                After
+              </p>
+              {afterPreview ? (
+                <img
+                  src={afterPreview}
+                  alt="After preview"
+                  className="h-24 w-full rounded-xl object-cover"
+                />
+              ) : (
+                <div className="flex h-24 items-center justify-center rounded-xl border border-dashed text-xs text-gray-400">
+                  None
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-3">
+        <div className="mt-5 flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs text-gray-500">Job Total</p>
-            <p className="text-xl font-bold text-teal-500">${total.toFixed(2)}</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-gray-500">
+              Job Total
+            </p>
+            <p className="mt-1 text-2xl font-bold text-teal-500">
+              ${total.toFixed(2)}
+            </p>
           </div>
 
-          <div className="flex gap-2 text-xs text-gray-400">
-            <span>Before: {job.before_photos?.length || 0}</span>
-            <span>After: {job.after_photos?.length || 0}</span>
+          <div className="text-right text-xs text-gray-400">
+            <p>Before: {job.before_photos?.length || 0}</p>
+            <p>After: {job.after_photos?.length || 0}</p>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="mt-5 flex flex-wrap gap-2 border-t border-white/10 pt-4">
           <button
             onClick={(e) => {
               e.stopPropagation()
               onCall(job.customer_phone)
             }}
-            className="rounded bg-gray-700 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-gray-600"
+            className="rounded-xl bg-gray-700 px-3 py-2 text-xs font-semibold text-white transition hover:scale-105 hover:bg-gray-600"
           >
             Call
           </button>
@@ -222,7 +303,7 @@ function JobCard({
               e.stopPropagation()
               onMaps(job.job_address)
             }}
-            className="rounded bg-indigo-600 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-indigo-500"
+            className="rounded-xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white transition hover:scale-105 hover:bg-indigo-500"
           >
             Maps
           </button>
@@ -232,7 +313,7 @@ function JobCard({
               e.stopPropagation()
               onShare(job)
             }}
-            className="rounded bg-purple-600 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-purple-500"
+            className="rounded-xl bg-purple-600 px-3 py-2 text-xs font-semibold text-white transition hover:scale-105 hover:bg-purple-500"
           >
             Share
           </button>
@@ -243,9 +324,9 @@ function JobCard({
                 e.stopPropagation()
                 onMarkDone(job.id)
               }}
-              className="rounded bg-green-600 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-green-500"
+              className="rounded-xl bg-green-600 px-3 py-2 text-xs font-semibold text-white transition hover:scale-105 hover:bg-green-500"
             >
-              Mark Done
+              Done
             </button>
           )}
 
@@ -255,9 +336,9 @@ function JobCard({
                 e.stopPropagation()
                 onMarkPaid(job.id)
               }}
-              className="rounded bg-emerald-600 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-emerald-500"
+              className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:scale-105 hover:bg-emerald-500"
             >
-              Mark Paid
+              Paid
             </button>
           )}
 
@@ -266,7 +347,7 @@ function JobCard({
               e.stopPropagation()
               onInvoice(job)
             }}
-            className="rounded bg-blue-500 px-3 py-2 text-xs text-white transition hover:scale-105"
+            className="rounded-xl bg-blue-500 px-3 py-2 text-xs font-semibold text-white transition hover:scale-105 hover:bg-blue-400"
           >
             Invoice
           </button>
@@ -276,7 +357,7 @@ function JobCard({
               e.stopPropagation()
               onDelete(job.id)
             }}
-            className="rounded bg-red-500 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-red-600"
+            className="rounded-xl bg-red-500 px-3 py-2 text-xs font-semibold text-white transition hover:scale-105 hover:bg-red-600"
           >
             Delete
           </button>
@@ -286,32 +367,308 @@ function JobCard({
   )
 }
 
-function CompactJobRow({ job, onOpen }) {
-  const total =
-    job.pricing_breakdown?.reduce(
-      (sum, item) => sum + (parseFloat(item.cost) || 0),
-      0
-    ) || job.price || 0
+function ScheduleDayCard({ dateLabel, jobs, darkMode, onOpen }) {
+  return (
+    <div
+      className={`rounded-3xl border p-5 shadow-sm ${
+        darkMode
+          ? "border-white/10 bg-gray-800/90"
+          : "border-black/5 bg-white/90"
+      }`}
+    >
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <p className="text-sm uppercase tracking-[0.2em] text-gray-500">
+            Schedule
+          </p>
+          <h3 className="mt-1 text-xl font-bold">{dateLabel}</h3>
+        </div>
+        <div className="rounded-full bg-teal-500/15 px-3 py-1 text-xs font-semibold text-teal-500">
+          {jobs.length} job{jobs.length !== 1 ? "s" : ""}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {jobs.map((job) => {
+          const total =
+            job.pricing_breakdown?.reduce(
+              (sum, item) => sum + (parseFloat(item.cost) || 0),
+              0
+            ) || job.price || 0
+
+          return (
+            <button
+              key={job.id}
+              onClick={() => onOpen(job)}
+              className={`flex w-full items-center justify-between rounded-2xl border px-4 py-4 text-left transition ${
+                darkMode
+                  ? "border-white/10 bg-white/5 hover:bg-white/10"
+                  : "border-black/5 bg-black/[0.03] hover:bg-black/[0.05]"
+              }`}
+            >
+              <div className="min-w-0">
+                <p className="truncate font-semibold">{job.customer_name}</p>
+                <p className="truncate text-sm text-gray-500">
+                  {job.vehicle} • {job.job_details?.[0] || "No service detail"}
+                </p>
+                {job.job_address && (
+                  <p className="mt-1 truncate text-xs text-gray-400">
+                    {job.job_address}
+                  </p>
+                )}
+              </div>
+
+              <div className="ml-4 flex shrink-0 flex-col items-end gap-2">
+                <div className="flex gap-2">
+                  <StatusBadge status={job.status} />
+                  <PaymentBadge paymentStatus={job.payment_status} />
+                </div>
+                <p className="text-sm font-bold text-teal-500">
+                  ${total.toFixed(2)}
+                </p>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function CalendarGrid({ monthDate, jobs, darkMode, onOpen }) {
+  const year = monthDate.getFullYear()
+  const month = monthDate.getMonth()
+
+  const firstDayOfMonth = new Date(year, month, 1)
+  const lastDayOfMonth = new Date(year, month + 1, 0)
+
+  const startWeekday = firstDayOfMonth.getDay()
+  const daysInMonth = lastDayOfMonth.getDate()
+
+  const cells = []
+  for (let i = 0; i < startWeekday; i += 1) cells.push(null)
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    cells.push(new Date(year, month, day))
+  }
+
+  const todayString = new Date().toISOString().split("T")[0]
+
+  const jobsByDate = jobs.reduce((acc, job) => {
+    const key = String(job.job_date || "").split("T")[0]
+    if (!key) return acc
+    if (!acc[key]) acc[key] = []
+    acc[key].push(job)
+    return acc
+  }, {})
+
+  const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
   return (
-    <button
-      onClick={() => onOpen(job)}
-      className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-left transition hover:bg-black/15"
-    >
-      <div className="min-w-0">
-        <p className="truncate font-semibold">{job.customer_name}</p>
-        <p className="truncate text-sm text-gray-500">
-          {job.vehicle} • {job.job_details?.[0] || "No service detail"}
-        </p>
+    <div className="space-y-4">
+      <div className="grid grid-cols-7 gap-2">
+        {weekdayLabels.map((label) => (
+          <div
+            key={label}
+            className="px-2 py-2 text-center text-xs font-semibold uppercase tracking-[0.2em] text-gray-500"
+          >
+            {label}
+          </div>
+        ))}
       </div>
 
-      <div className="ml-4 flex shrink-0 items-center gap-2">
-        <StatusBadge status={job.status} />
-        <span className="text-sm font-semibold text-teal-500">
-          ${total.toFixed(2)}
-        </span>
+      <div className="grid grid-cols-7 gap-2">
+        {cells.map((dateObj, index) => {
+          if (!dateObj) {
+            return (
+              <div
+                key={`empty-${index}`}
+                className={`min-h-[120px] rounded-2xl border ${
+                  darkMode
+                    ? "border-white/5 bg-white/[0.02]"
+                    : "border-black/[0.03] bg-black/[0.02]"
+                }`}
+              />
+            )
+          }
+
+          const key = dateObj.toISOString().split("T")[0]
+          const dayJobs = jobsByDate[key] || []
+          const isToday = key === todayString
+
+          return (
+            <div
+              key={key}
+              className={`min-h-[120px] rounded-2xl border p-2 ${
+                isToday
+                  ? "border-teal-500 bg-teal-500/10"
+                  : darkMode
+                  ? "border-white/10 bg-white/5"
+                  : "border-black/5 bg-black/[0.03]"
+              }`}
+            >
+              <div className="mb-2 flex items-center justify-between">
+                <p className={`text-sm font-bold ${isToday ? "text-teal-400" : ""}`}>
+                  {dateObj.getDate()}
+                </p>
+                {dayJobs.length > 0 && (
+                  <span className="rounded-full bg-blue-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+                    {dayJobs.length}
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                {dayJobs.slice(0, 3).map((job) => (
+                  <button
+                    key={job.id}
+                    onClick={() => onOpen(job)}
+                    className="w-full rounded-lg bg-white/10 px-2 py-1 text-left text-[11px] font-medium transition hover:bg-white/20"
+                  >
+                    <span className="block truncate">{job.customer_name}</span>
+                    <span className="block truncate text-[10px] text-gray-400">
+                      {job.vehicle}
+                    </span>
+                  </button>
+                ))}
+
+                {dayJobs.length > 3 && (
+                  <div className="text-[10px] font-semibold text-gray-400">
+                    +{dayJobs.length - 3} more
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })}
       </div>
-    </button>
+    </div>
+  )
+}
+
+function DilutionCalculator({ darkMode }) {
+  const [ratioParts, setRatioParts] = useState("10")
+  const [bottleSize, setBottleSize] = useState("500")
+  const [unit, setUnit] = useState("ml")
+
+  const parts = parseFloat(ratioParts) || 0
+  const total = parseFloat(bottleSize) || 0
+
+  const chemicalAmount = parts > 0 ? total / (parts + 1) : 0
+  const waterAmount = total - chemicalAmount
+
+  const commonPresets = [
+    { label: "1:4", value: "4" },
+    { label: "1:10", value: "10" },
+    { label: "1:20", value: "20" },
+    { label: "1:50", value: "50" },
+  ]
+
+  return (
+    <SectionCard title="Dilution Calculator" darkMode={darkMode}>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div
+          className={`rounded-3xl border p-5 ${
+            darkMode
+              ? "border-white/10 bg-white/5"
+              : "border-black/5 bg-black/[0.03]"
+          }`}
+        >
+          <div className="space-y-4">
+            <div>
+              <label className="mb-2 block text-sm font-semibold">Ratio</label>
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-sm font-semibold">
+                  1 :
+                </div>
+                <input
+                  type="number"
+                  min="1"
+                  value={ratioParts}
+                  onChange={(e) => setRatioParts(e.target.value)}
+                  className="w-full rounded-xl border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold">
+                Total Bottle Size
+              </label>
+              <div className="flex gap-3">
+                <input
+                  type="number"
+                  min="1"
+                  value={bottleSize}
+                  onChange={(e) => setBottleSize(e.target.value)}
+                  className="w-full rounded-xl border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
+                />
+                <select
+                  value={unit}
+                  onChange={(e) => setUnit(e.target.value)}
+                  className="rounded-xl border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="ml">ml</option>
+                  <option value="L">L</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-sm font-semibold">Quick Ratios</p>
+              <div className="flex flex-wrap gap-2">
+                {commonPresets.map((preset) => (
+                  <button
+                    key={preset.label}
+                    onClick={() => setRatioParts(preset.value)}
+                    className="rounded-xl bg-teal-500/15 px-3 py-2 text-sm font-semibold text-teal-400 transition hover:bg-teal-500/25"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className={`rounded-3xl border p-5 ${
+            darkMode
+              ? "border-white/10 bg-white/5"
+              : "border-black/5 bg-black/[0.03]"
+          }`}
+        >
+          <p className="text-sm uppercase tracking-[0.18em] text-gray-500">
+            Result
+          </p>
+
+          <div className="mt-5 space-y-4">
+            <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
+              <p className="text-sm text-gray-500">Chemical Needed</p>
+              <p className="mt-1 text-3xl font-bold text-teal-500">
+                {chemicalAmount.toFixed(2)} {unit}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
+              <p className="text-sm text-gray-500">Water Needed</p>
+              <p className="mt-1 text-3xl font-bold text-blue-400">
+                {waterAmount.toFixed(2)} {unit}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
+              <p className="text-sm text-gray-500">Mix Summary</p>
+              <p className="mt-1 text-base font-semibold">
+                For a 1:{parts || 0} mix in a {total || 0}
+                {unit} bottle, use {chemicalAmount.toFixed(2)}
+                {unit} of chemical and {waterAmount.toFixed(2)}
+                {unit} of water.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </SectionCard>
   )
 }
 
@@ -624,14 +981,14 @@ function JobModal({
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold">Job Details</h3>
                   <button
-                    onClick={() => setDetails([...details, ""])}
+                    onClick={() => setDetails([...(details || []), ""])}
                     className="text-sm text-teal-500 hover:underline"
                   >
                     + Add Detail
                   </button>
                 </div>
 
-                {details.map((detail, index) => (
+                {(details || []).map((detail, index) => (
                   <div key={`detail-${index}`} className="flex gap-2">
                     <input
                       value={detail}
@@ -659,7 +1016,7 @@ function JobModal({
                   <h3 className="text-sm font-semibold">Pricing</h3>
                   <button
                     onClick={() =>
-                      setPricing([...pricing, { service: "", cost: "" }])
+                      setPricing([...(pricing || []), { service: "", cost: "" }])
                     }
                     className="text-sm text-teal-500 hover:underline"
                   >
@@ -667,7 +1024,7 @@ function JobModal({
                   </button>
                 </div>
 
-                {pricing.map((item, index) => (
+                {(pricing || []).map((item, index) => (
                   <div
                     key={`price-${index}`}
                     className="flex flex-col gap-2 sm:flex-row"
@@ -883,11 +1240,12 @@ export default function DashboardPage() {
   const [jobs, setJobs] = useState([])
   const [expenses, setExpenses] = useState([])
   const [selectedJob, setSelectedJob] = useState(null)
-  const [darkMode, setDarkMode] = useState(false)
+  const [darkMode, setDarkMode] = useState(true)
   const [filterStatus, setFilterStatus] = useState("All")
   const [filterDate, setFilterDate] = useState("")
   const [financePeriod, setFinancePeriod] = useState("All Time")
   const [activeTab, setActiveTab] = useState("Dashboard")
+  const [calendarDate, setCalendarDate] = useState(new Date())
 
   const [expenseAmount, setExpenseAmount] = useState("")
   const [expenseCategory, setExpenseCategory] = useState("Products")
@@ -1423,12 +1781,13 @@ export default function DashboardPage() {
     const grouped = {}
 
     jobs.forEach((job) => {
-      const name = (job.customer_name || "Unknown Customer").trim()
       const total =
         job.pricing_breakdown?.reduce(
           (sum, item) => sum + (parseFloat(item.cost) || 0),
           0
         ) || job.price || 0
+
+      const name = (job.customer_name || "Unknown Customer").trim()
 
       if (!grouped[name]) {
         grouped[name] = {
@@ -1452,10 +1811,55 @@ export default function DashboardPage() {
       }
     })
 
-    return Object.values(grouped).sort(
-      (a, b) => b.totalSpend - a.totalSpend
-    )
+    return Object.values(grouped).sort((a, b) => b.totalSpend - a.totalSpend)
   }, [jobs])
+
+  const groupedSchedule = useMemo(() => {
+    const sorted = [...jobs].sort(
+      (a, b) => new Date(a.job_date || 0) - new Date(b.job_date || 0)
+    )
+
+    const groups = {}
+
+    sorted.forEach((job) => {
+      const dateKey = String(job.job_date || "").split("T")[0] || "No date"
+      if (!groups[dateKey]) groups[dateKey] = []
+      groups[dateKey].push(job)
+    })
+
+    return Object.entries(groups)
+      .filter(([date]) => date !== "No date")
+      .map(([date, jobsForDate]) => {
+        let label = new Date(date).toLocaleDateString(undefined, {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
+
+        if (date === normalizedToday) label = `Today • ${label}`
+        if (date === normalizedTomorrow) label = `Tomorrow • ${label}`
+
+        return { date, label, jobs: jobsForDate }
+      })
+  }, [jobs, normalizedToday, normalizedTomorrow])
+
+  const calendarTitle = calendarDate.toLocaleDateString(undefined, {
+    month: "long",
+    year: "numeric",
+  })
+
+  const goPrevMonth = () => {
+    setCalendarDate(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)
+    )
+  }
+
+  const goNextMonth = () => {
+    setCalendarDate(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)
+    )
+  }
 
   return (
     <div
@@ -1463,31 +1867,39 @@ export default function DashboardPage() {
         darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"
       }`}
     >
-      <div className="border-b border-white/10 bg-black shadow-lg">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-3 sm:gap-4">
+      <div className="sticky top-0 z-40 border-b border-white/10 bg-black/85 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
             <img
               src="/logo.png"
-              alt="The DTL Co. logo"
-              className="h-6 w-auto object-contain scale-90"
+              alt="The DTL Co."
+              className="h-6 w-auto object-contain scale-40 shrink-0"
             />
-            <div className="hidden sm:block">
-              <p className="text-lg font-bold tracking-[0.2em] text-white">
+            <div className="leading-tight">
+              <p className="text-sm font-semibold tracking-wide text-white">
                 THE DTL CO.
               </p>
-              <p className="text-xs tracking-[0.35em] text-gray-400">
-                AUTO DETAILING CRM
+              <p className="text-[10px] tracking-[0.3em] text-gray-400">
+                DETAILING CRM
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className="rounded-lg bg-gray-800 px-3 py-2 text-sm text-white transition hover:scale-105 hover:bg-gray-700"
+              className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white transition hover:bg-white/10"
             >
               {darkMode ? "Light" : "Dark"}
             </button>
+
+            <button
+              onClick={addJob}
+              className="rounded-lg bg-teal-500 px-4 py-1.5 text-xs font-semibold text-white transition hover:scale-[1.02] hover:bg-teal-600"
+            >
+              + Job
+            </button>
+
             <LogoutButton />
           </div>
         </div>
@@ -1507,6 +1919,16 @@ export default function DashboardPage() {
               onClick={() => setActiveTab("Jobs")}
             />
             <TabButton
+              label="Schedule"
+              active={activeTab === "Schedule"}
+              onClick={() => setActiveTab("Schedule")}
+            />
+            <TabButton
+              label="Calendar"
+              active={activeTab === "Calendar"}
+              onClick={() => setActiveTab("Calendar")}
+            />
+            <TabButton
               label="Customers"
               active={activeTab === "Customers"}
               onClick={() => setActiveTab("Customers")}
@@ -1515,6 +1937,11 @@ export default function DashboardPage() {
               label="Finance"
               active={activeTab === "Finance"}
               onClick={() => setActiveTab("Finance")}
+            />
+            <TabButton
+              label="Dilution"
+              active={activeTab === "Dilution"}
+              onClick={() => setActiveTab("Dilution")}
             />
           </div>
         </div>
@@ -1550,10 +1977,7 @@ export default function DashboardPage() {
               />
             </div>
 
-            <SectionCard
-              title="Quick Actions"
-              darkMode={darkMode}
-            >
+            <SectionCard title="Quick Actions" darkMode={darkMode}>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <QuickActionButton
                   onClick={addJob}
@@ -1570,77 +1994,74 @@ export default function DashboardPage() {
                 </QuickActionButton>
 
                 <QuickActionButton
-                  onClick={() => setActiveTab("Finance")}
-                  className="bg-purple-600 text-white shadow hover:bg-purple-700"
+                  onClick={() => setActiveTab("Calendar")}
+                  className="bg-indigo-600 text-white shadow hover:bg-indigo-700"
                 >
-                  Finance Overview
+                  Open Calendar
                 </QuickActionButton>
 
                 <QuickActionButton
-                  onClick={() => setActiveTab("Customers")}
-                  className="bg-gray-700 text-white shadow hover:bg-gray-800"
+                  onClick={() => setActiveTab("Dilution")}
+                  className="bg-purple-600 text-white shadow hover:bg-purple-700"
                 >
-                  Customer List
+                  Dilution Tool
                 </QuickActionButton>
               </div>
             </SectionCard>
 
             <div className="grid gap-6 xl:grid-cols-3">
-              <div className="xl:col-span-1">
-                <SectionCard title="Today" darkMode={darkMode}>
-                  {todaysJobs.length > 0 ? (
-                    <div className="space-y-3">
-                      {todaysJobs.map((job) => (
-                        <CompactJobRow
-                          key={job.id}
-                          job={job}
-                          onOpen={setSelectedJob}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500">No jobs booked today.</p>
-                  )}
-                </SectionCard>
-              </div>
+              <SectionCard title="Today" darkMode={darkMode}>
+                {todaysJobs.length > 0 ? (
+                  <div className="space-y-3">
+                    {todaysJobs.map((job) => (
+                      <CompactJobRow
+                        key={job.id}
+                        job={job}
+                        onOpen={setSelectedJob}
+                        darkMode={darkMode}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">No jobs booked today.</p>
+                )}
+              </SectionCard>
 
-              <div className="xl:col-span-1">
-                <SectionCard title="Tomorrow" darkMode={darkMode}>
-                  {tomorrowJobs.length > 0 ? (
-                    <div className="space-y-3">
-                      {tomorrowJobs.map((job) => (
-                        <CompactJobRow
-                          key={job.id}
-                          job={job}
-                          onOpen={setSelectedJob}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500">
-                      No jobs locked in for tomorrow.
-                    </p>
-                  )}
-                </SectionCard>
-              </div>
+              <SectionCard title="Tomorrow" darkMode={darkMode}>
+                {tomorrowJobs.length > 0 ? (
+                  <div className="space-y-3">
+                    {tomorrowJobs.map((job) => (
+                      <CompactJobRow
+                        key={job.id}
+                        job={job}
+                        onOpen={setSelectedJob}
+                        darkMode={darkMode}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No jobs locked in for tomorrow.
+                  </p>
+                )}
+              </SectionCard>
 
-              <div className="xl:col-span-1">
-                <SectionCard title="Upcoming" darkMode={darkMode}>
-                  {upcomingJobs.length > 0 ? (
-                    <div className="space-y-3">
-                      {upcomingJobs.slice(0, 5).map((job) => (
-                        <CompactJobRow
-                          key={job.id}
-                          job={job}
-                          onOpen={setSelectedJob}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500">No future jobs yet.</p>
-                  )}
-                </SectionCard>
-              </div>
+              <SectionCard title="Upcoming" darkMode={darkMode}>
+                {upcomingJobs.length > 0 ? (
+                  <div className="space-y-3">
+                    {upcomingJobs.slice(0, 5).map((job) => (
+                      <CompactJobRow
+                        key={job.id}
+                        job={job}
+                        onOpen={setSelectedJob}
+                        darkMode={darkMode}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">No future jobs yet.</p>
+                )}
+              </SectionCard>
             </div>
 
             <div className="grid gap-6 xl:grid-cols-3">
@@ -1684,28 +2105,28 @@ export default function DashboardPage() {
               <div className="xl:col-span-1">
                 <SectionCard title="Snapshot" darkMode={darkMode}>
                   <div className="space-y-4">
-                    <div className="rounded-xl border border-white/10 bg-black/10 p-4">
+                    <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
                       <p className="text-sm text-gray-500">Paid Revenue</p>
                       <p className="mt-1 text-2xl font-bold text-emerald-500">
                         ${paidRevenue.toFixed(2)}
                       </p>
                     </div>
 
-                    <div className="rounded-xl border border-white/10 bg-black/10 p-4">
+                    <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
                       <p className="text-sm text-gray-500">Outstanding</p>
                       <p className="mt-1 text-2xl font-bold text-orange-500">
                         ${outstandingAmount.toFixed(2)}
                       </p>
                     </div>
 
-                    <div className="rounded-xl border border-white/10 bg-black/10 p-4">
+                    <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
                       <p className="text-sm text-gray-500">Expenses</p>
                       <p className="mt-1 text-2xl font-bold text-red-500">
                         ${totalExpenses.toFixed(2)}
                       </p>
                     </div>
 
-                    <div className="rounded-xl border border-white/10 bg-black/10 p-4">
+                    <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
                       <p className="text-sm text-gray-500">Net Profit</p>
                       <p className="mt-1 text-2xl font-bold text-teal-500">
                         ${netProfit.toFixed(2)}
@@ -1719,62 +2140,124 @@ export default function DashboardPage() {
         )}
 
         {activeTab === "Jobs" && (
-          <>
-            <SectionCard
-              title="Jobs"
-              darkMode={darkMode}
-              rightSlot={
-                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                  <select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    className="rounded border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
-                  >
-                    <option>All</option>
-                    <option>Booked</option>
-                    <option>In Progress</option>
-                    <option>Done</option>
-                  </select>
+          <SectionCard
+            title="Jobs"
+            darkMode={darkMode}
+            rightSlot={
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="rounded border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
+                >
+                  <option>All</option>
+                  <option>Booked</option>
+                  <option>In Progress</option>
+                  <option>Done</option>
+                </select>
 
-                  <input
-                    type="date"
-                    value={filterDate}
-                    onChange={(e) => setFilterDate(e.target.value)}
-                    className="rounded border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
+                <input
+                  type="date"
+                  value={filterDate}
+                  onChange={(e) => setFilterDate(e.target.value)}
+                  className="rounded border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
+                />
+
+                <button
+                  onClick={addJob}
+                  className="rounded bg-teal-500 px-4 py-3 text-white shadow transition hover:scale-105 hover:bg-teal-600"
+                >
+                  + Add Job
+                </button>
+              </div>
+            }
+          >
+            {filteredJobs.length > 0 ? (
+              <div className="grid gap-4 lg:grid-cols-2">
+                {filteredJobs.map((job) => (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    darkMode={darkMode}
+                    onOpen={setSelectedJob}
+                    onCall={openCall}
+                    onMaps={openMaps}
+                    onShare={generateShareImage}
+                    onMarkDone={markJobDone}
+                    onMarkPaid={markJobPaid}
+                    onInvoice={generateInvoice}
+                    onDelete={deleteJob}
                   />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">No jobs match your filters.</p>
+            )}
+          </SectionCard>
+        )}
 
-                  <button
-                    onClick={addJob}
-                    className="rounded bg-teal-500 px-4 py-3 text-white shadow transition hover:scale-105 hover:bg-teal-600"
-                  >
-                    + Add Job
-                  </button>
+        {activeTab === "Schedule" && (
+          <SectionCard
+            title="Schedule"
+            darkMode={darkMode}
+            rightSlot={
+              <button
+                onClick={addJob}
+                className="rounded bg-teal-500 px-4 py-3 text-white shadow transition hover:scale-105 hover:bg-teal-600"
+              >
+                + Add Job
+              </button>
+            }
+          >
+            {groupedSchedule.length > 0 ? (
+              <div className="grid gap-4 xl:grid-cols-2">
+                {groupedSchedule.map((group) => (
+                  <ScheduleDayCard
+                    key={group.date}
+                    dateLabel={group.label}
+                    jobs={group.jobs}
+                    darkMode={darkMode}
+                    onOpen={setSelectedJob}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">No scheduled jobs yet.</p>
+            )}
+          </SectionCard>
+        )}
+
+        {activeTab === "Calendar" && (
+          <SectionCard
+            title="Calendar"
+            darkMode={darkMode}
+            rightSlot={
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={goPrevMonth}
+                  className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm transition hover:bg-white/10"
+                >
+                  Prev
+                </button>
+                <div className="rounded-lg bg-black/10 px-4 py-2 text-sm font-semibold">
+                  {calendarTitle}
                 </div>
-              }
-            >
-              {filteredJobs.length > 0 ? (
-                <div className="grid gap-4 lg:grid-cols-2">
-                  {filteredJobs.map((job) => (
-                    <JobCard
-                      key={job.id}
-                      job={job}
-                      darkMode={darkMode}
-                      onOpen={setSelectedJob}
-                      onCall={openCall}
-                      onMaps={openMaps}
-                      onShare={generateShareImage}
-                      onMarkDone={markJobDone}
-                      onMarkPaid={markJobPaid}
-                      onInvoice={generateInvoice}
-                      onDelete={deleteJob}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500">No jobs match your filters.</p>
-              )}
-            </SectionCard>
-          </>
+                <button
+                  onClick={goNextMonth}
+                  className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm transition hover:bg-white/10"
+                >
+                  Next
+                </button>
+              </div>
+            }
+          >
+            <CalendarGrid
+              monthDate={calendarDate}
+              jobs={jobs}
+              darkMode={darkMode}
+              onOpen={setSelectedJob}
+            />
+          </SectionCard>
         )}
 
         {activeTab === "Customers" && (
@@ -1783,8 +2266,10 @@ export default function DashboardPage() {
               {customerSummaries.map((customer) => (
                 <div
                   key={customer.name}
-                  className={`rounded-2xl p-4 shadow ${
-                    darkMode ? "bg-gray-900" : "bg-gray-50"
+                  className={`rounded-3xl border p-4 shadow-sm ${
+                    darkMode
+                      ? "border-white/10 bg-gray-900"
+                      : "border-black/5 bg-gray-50"
                   }`}
                 >
                   <p className="text-lg font-bold">{customer.name}</p>
@@ -1887,13 +2372,13 @@ export default function DashboardPage() {
               </div>
 
               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border border-white/10 p-4">
+                <div className="rounded-2xl border border-white/10 p-4">
                   <p className="text-sm text-gray-500">Unpaid Jobs</p>
                   <p className="mt-1 text-2xl font-bold text-red-500">
                     {unpaidJobsCount}
                   </p>
                 </div>
-                <div className="rounded-xl border border-white/10 p-4">
+                <div className="rounded-2xl border border-white/10 p-4">
                   <p className="text-sm text-gray-500">Cash Collected Rate</p>
                   <p className="mt-1 text-2xl font-bold text-teal-500">
                     {totalRevenue > 0
@@ -1996,6 +2481,8 @@ export default function DashboardPage() {
             </SectionCard>
           </>
         )}
+
+        {activeTab === "Dilution" && <DilutionCalculator darkMode={darkMode} />}
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-black/95 px-3 py-3 backdrop-blur sm:hidden">
@@ -2008,7 +2495,7 @@ export default function DashboardPage() {
                 : "bg-gray-800 text-gray-300"
             }`}
           >
-            Dashboard
+            Dash
           </button>
           <button
             onClick={() => setActiveTab("Jobs")}
@@ -2021,24 +2508,24 @@ export default function DashboardPage() {
             Jobs
           </button>
           <button
-            onClick={() => setActiveTab("Customers")}
+            onClick={() => setActiveTab("Calendar")}
             className={`rounded-lg px-2 py-3 text-xs font-semibold ${
-              activeTab === "Customers"
+              activeTab === "Calendar"
                 ? "bg-teal-500 text-white"
                 : "bg-gray-800 text-gray-300"
             }`}
           >
-            Customers
+            Cal
           </button>
           <button
-            onClick={() => setActiveTab("Finance")}
+            onClick={() => setActiveTab("Dilution")}
             className={`rounded-lg px-2 py-3 text-xs font-semibold ${
-              activeTab === "Finance"
+              activeTab === "Dilution"
                 ? "bg-teal-500 text-white"
                 : "bg-gray-800 text-gray-300"
             }`}
           >
-            Finance
+            Mix
           </button>
         </div>
       </div>

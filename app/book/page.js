@@ -168,7 +168,7 @@ export default function BookingPage() {
 
             <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-gray-400 sm:text-base">
               Mobile detailing built around gloss, refinement, and long-term
-              care. Book your vehicle below and we’ll get your detail locked in
+              care. Book your enquiry below and we’ll get your detail locked in
               properly.
             </p>
 
@@ -177,7 +177,7 @@ export default function BookingPage() {
                 href="#booking-form"
                 className="rounded-2xl bg-white px-6 py-3 font-semibold text-black transition duration-300 hover:scale-[1.02] hover:opacity-90"
               >
-                Book Now
+                Enquire Now
               </a>
 
               <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm text-gray-300 backdrop-blur">
@@ -252,7 +252,7 @@ export default function BookingPage() {
                 <h3 className="mt-3 text-xl font-bold">Paint Correction</h3>
                 <p className="mt-3 text-sm leading-6 text-gray-400">
                   Refinement work focused on gloss, clarity, and defect
-                  reduction for a sharper, deeper finish.
+                  reduction for a sharper, deeper finish and Ceramic Coating.
                 </p>
                 <p className="mt-5 text-sm font-semibold text-white/90 group-hover:text-white">
                   Choose this service →
@@ -279,7 +279,7 @@ export default function BookingPage() {
             <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
               <h3 className="text-lg font-semibold">Mobile Convenience</h3>
               <p className="mt-3 text-sm leading-6 text-gray-400">
-                Based in Eltham with mobile service available, making premium
+                Based in Eltham with mobile service available on request, making premium
                 detailing easier to fit into your week.
               </p>
             </div>
@@ -289,7 +289,7 @@ export default function BookingPage() {
             <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
               <h3 className="text-lg font-semibold">Straightforward Booking</h3>
               <p className="mt-3 text-sm leading-6 text-gray-400">
-                Submit once, lock in your details, and your booking drops
+                Submit once, lock in your details, and your enquiry drops
                 straight into the system for fast follow-up.
               </p>
             </div>
@@ -308,7 +308,7 @@ export default function BookingPage() {
                 Lock In Your Detail
               </h2>
               <p className="mt-3 text-sm text-gray-400 sm:text-base">
-                Fill out the form below and we’ll get your booking into the
+                Fill out the form below and we’ll get your enquiry into the
                 system.
               </p>
             </div>
@@ -318,7 +318,7 @@ export default function BookingPage() {
             <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5 shadow-[0_25px_80px_rgba(0,0,0,0.35)] backdrop-blur sm:p-8">
               {success && (
                 <div className="mb-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-300">
-                  Booking secured. We’ll be in touch shortly to confirm details.
+                  Enquiry Submitted. We’ll be in touch shortly to confirm details.
                 </div>
               )}
 

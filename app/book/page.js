@@ -69,13 +69,13 @@ export default function BookingPage() {
           <img
             src="/logo.png"
             alt="The DTL Co."
-            className="mx-auto mb-6 h-20 w-auto object-contain"
+            className="mx-auto mb-8 h-32 w-auto object-contain sm:h-40 md:h-44"
           />
           <h1 className="text-3xl font-bold tracking-wide sm:text-4xl">
-            Book Your Detail
+            Quote Request
           </h1>
           <p className="mt-3 text-sm text-gray-400 sm:text-base">
-            Fill out the form below and we’ll get your booking into the system.
+            Fill out the form below and we’ll get back to you.
           </p>
         </div>
 

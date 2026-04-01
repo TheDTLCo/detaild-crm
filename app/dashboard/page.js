@@ -1873,7 +1873,7 @@ export default function DashboardPage() {
             <img
               src="/logo.png"
               alt="The DTL Co."
-              className="h-6 w-auto object-contain scale-40 shrink-0"
+              className="h-6 w-auto object-contain scale-60 shrink-0"
             />
             <div className="leading-tight">
               <p className="text-sm font-semibold tracking-wide text-white">

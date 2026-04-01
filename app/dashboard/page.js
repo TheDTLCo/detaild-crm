@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react"
 import jsPDF from "jspdf"
-import { supabase } from "@/lib/supabaseClient"
+import { createClient } from "@/lib/supabase/client"
+import LogoutButton from "@/app/components/LogoutButton"
 
 function TabButton({ label, active, onClick }) {
   return (
@@ -48,9 +49,7 @@ function PhotoGallery({
         </label>
       </div>
 
-      {uploading && (
-        <p className="mb-3 text-sm text-gray-500">Uploading...</p>
-      )}
+      {uploading && <p className="mb-3 text-sm text-gray-500">Uploading...</p>}
 
       {photos?.length > 0 ? (
         <div className="flex flex-wrap gap-2">
@@ -84,6 +83,7 @@ function JobModal({
   onUpdate,
   darkMode,
   generateInvoice,
+  supabase,
 }) {
   if (!job) return null
 
@@ -93,7 +93,9 @@ function JobModal({
   const [address, setAddress] = useState(job.job_address || "")
   const [customerNotes, setCustomerNotes] = useState(job.customer_notes || "")
   const [date, setDate] = useState(
-    job.job_date || new Date().toISOString().split("T")[0]
+    job.job_date
+      ? String(job.job_date).split("T")[0]
+      : new Date().toISOString().split("T")[0]
   )
   const [details, setDetails] = useState(job.job_details || [])
   const [pricing, setPricing] = useState(job.pricing_breakdown || [])
@@ -597,7 +599,9 @@ function JobModal({
   )
 }
 
-export default function Dashboard() {
+export default function DashboardPage() {
+  const supabase = createClient()
+
   const [jobs, setJobs] = useState([])
   const [expenses, setExpenses] = useState([])
   const [selectedJob, setSelectedJob] = useState(null)
@@ -617,6 +621,7 @@ export default function Dashboard() {
   useEffect(() => {
     fetchJobs()
     fetchExpenses()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchJobs = async () => {
@@ -878,7 +883,7 @@ export default function Dashboard() {
         img.onerror = reject
       })
       doc.addImage(img, "PNG", 14, 8, 58, 20)
-    } catch (e) {
+    } catch {
       doc.setTextColor(255, 255, 255)
       doc.setFontSize(18)
       doc.text("THE DTL CO.", 14, 20)
@@ -981,9 +986,9 @@ export default function Dashboard() {
 
   const filteredJobs = useMemo(() => {
     return jobs
-      .filter((job) => !filterDate || job.job_date === filterDate)
+      .filter((job) => !filterDate || String(job.job_date || "").split("T")[0] === filterDate)
       .filter((job) => filterStatus === "All" || job.status === filterStatus)
-      .sort((a, b) => new Date(a.job_date) - new Date(b.job_date))
+      .sort((a, b) => new Date(a.job_date || 0) - new Date(b.job_date || 0))
   }, [jobs, filterDate, filterStatus])
 
   const filteredFinanceJobs = useMemo(() => {
@@ -1076,7 +1081,9 @@ export default function Dashboard() {
   const outstandingAmount = unpaidRevenue
 
   const today = new Date().toISOString().split("T")[0]
-  const todaysJobs = jobs.filter((job) => job.job_date === today)
+  const todaysJobs = jobs.filter(
+    (job) => String(job.job_date || "").split("T")[0] === today
+  )
 
   const statusColors = {
     Booked: "bg-blue-500",
@@ -1146,12 +1153,15 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="rounded-lg bg-gray-800 px-3 py-2 text-sm text-white transition hover:scale-105 hover:bg-gray-700"
-          >
-            {darkMode ? "Light" : "Dark"}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="rounded-lg bg-gray-800 px-3 py-2 text-sm text-white transition hover:scale-105 hover:bg-gray-700"
+            >
+              {darkMode ? "Light" : "Dark"}
+            </button>
+            <LogoutButton />
+          </div>
         </div>
       </div>
 
@@ -1184,25 +1194,51 @@ export default function Dashboard() {
         {activeTab === "Dashboard" && (
           <>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <div
+                className={`rounded-2xl p-4 shadow ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}
+              >
                 <p className="text-sm text-gray-500">Total Jobs</p>
                 <p className="mt-1 text-2xl font-bold">{jobs.length}</p>
               </div>
-              <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <div
+                className={`rounded-2xl p-4 shadow ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}
+              >
                 <p className="text-sm text-gray-500">Revenue</p>
-                <p className="mt-1 text-2xl font-bold text-green-500">${totalRevenue.toFixed(2)}</p>
+                <p className="mt-1 text-2xl font-bold text-green-500">
+                  ${totalRevenue.toFixed(2)}
+                </p>
               </div>
-              <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <div
+                className={`rounded-2xl p-4 shadow ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}
+              >
                 <p className="text-sm text-gray-500">Expenses</p>
-                <p className="mt-1 text-2xl font-bold text-red-500">${totalExpenses.toFixed(2)}</p>
+                <p className="mt-1 text-2xl font-bold text-red-500">
+                  ${totalExpenses.toFixed(2)}
+                </p>
               </div>
-              <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <div
+                className={`rounded-2xl p-4 shadow ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}
+              >
                 <p className="text-sm text-gray-500">Net Profit</p>
-                <p className="mt-1 text-2xl font-bold text-teal-500">${netProfit.toFixed(2)}</p>
+                <p className="mt-1 text-2xl font-bold text-teal-500">
+                  ${netProfit.toFixed(2)}
+                </p>
               </div>
             </div>
 
-            <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800/90" : "bg-white/90"}`}>
+            <div
+              className={`rounded-2xl p-4 shadow ${
+                darkMode ? "bg-gray-800/90" : "bg-white/90"
+              }`}
+            >
               <h3 className="mb-2 text-sm font-semibold">Today's Bookings</h3>
               {todaysJobs.length > 0 ? (
                 <div className="space-y-2">
@@ -1539,25 +1575,41 @@ export default function Dashboard() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <div
+                className={`rounded-2xl p-4 shadow ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}
+              >
                 <p className="text-sm text-gray-500">Revenue</p>
                 <p className="mt-1 text-2xl font-bold text-green-500">
                   ${totalRevenue.toFixed(2)}
                 </p>
               </div>
-              <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <div
+                className={`rounded-2xl p-4 shadow ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}
+              >
                 <p className="text-sm text-gray-500">Expenses</p>
                 <p className="mt-1 text-2xl font-bold text-red-500">
                   ${totalExpenses.toFixed(2)}
                 </p>
               </div>
-              <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <div
+                className={`rounded-2xl p-4 shadow ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}
+              >
                 <p className="text-sm text-gray-500">Net Profit</p>
                 <p className="mt-1 text-2xl font-bold text-teal-500">
                   ${netProfit.toFixed(2)}
                 </p>
               </div>
-              <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <div
+                className={`rounded-2xl p-4 shadow ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}
+              >
                 <p className="text-sm text-gray-500">Revenue incl. GST</p>
                 <p className="mt-1 text-2xl font-bold text-blue-500">
                   ${totalRevenueWithGst.toFixed(2)}
@@ -1566,25 +1618,41 @@ export default function Dashboard() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <div
+                className={`rounded-2xl p-4 shadow ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}
+              >
                 <p className="text-sm text-gray-500">Paid Revenue</p>
                 <p className="mt-1 text-2xl font-bold text-emerald-500">
                   ${paidRevenue.toFixed(2)}
                 </p>
               </div>
-              <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <div
+                className={`rounded-2xl p-4 shadow ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}
+              >
                 <p className="text-sm text-gray-500">Unpaid Revenue</p>
                 <p className="mt-1 text-2xl font-bold text-red-500">
                   ${unpaidRevenue.toFixed(2)}
                 </p>
               </div>
-              <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <div
+                className={`rounded-2xl p-4 shadow ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}
+              >
                 <p className="text-sm text-gray-500">Paid Jobs</p>
                 <p className="mt-1 text-2xl font-bold text-emerald-500">
                   {paidJobsCount}
                 </p>
               </div>
-              <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <div
+                className={`rounded-2xl p-4 shadow ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}
+              >
                 <p className="text-sm text-gray-500">Outstanding</p>
                 <p className="mt-1 text-2xl font-bold text-orange-500">
                   ${outstandingAmount.toFixed(2)}
@@ -1592,7 +1660,11 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+            <div
+              className={`rounded-2xl p-4 shadow ${
+                darkMode ? "bg-gray-800" : "bg-white"
+              }`}
+            >
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="rounded-xl border border-gray-200/20 p-4">
                   <p className="text-sm text-gray-500">Unpaid Jobs</p>
@@ -1611,7 +1683,11 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+            <div
+              className={`rounded-2xl p-4 shadow ${
+                darkMode ? "bg-gray-800" : "bg-white"
+              }`}
+            >
               <h3 className="mb-4 text-sm font-semibold">Add Expense</h3>
               <form
                 onSubmit={addExpense}
@@ -1662,7 +1738,11 @@ export default function Dashboard() {
               </form>
             </div>
 
-            <div className={`rounded-2xl p-4 shadow ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+            <div
+              className={`rounded-2xl p-4 shadow ${
+                darkMode ? "bg-gray-800" : "bg-white"
+              }`}
+            >
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-sm font-semibold">Recent Expenses</h3>
                 <p className="text-sm text-gray-500">
@@ -1768,6 +1848,7 @@ export default function Dashboard() {
           onUpdate={updateJob}
           darkMode={darkMode}
           generateInvoice={generateInvoice}
+          supabase={supabase}
         />
       )}
     </div>

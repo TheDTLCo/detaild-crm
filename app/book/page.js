@@ -143,7 +143,7 @@ export default function BookingPage() {
                 <img
                   src="/logo.png"
                   alt="The DTL Co."
-                  className="relative z-10 mx-auto h-32 w-auto object-contain drop-shadow-[0_0_32px_rgba(255,255,255,0.14)] sm:h-40 md:h-44"
+                  className="relative z-10 mx-auto h-44 w-auto object-contain sm:h-56 md:h-64 lg:h-72"
                 />
 
                 <div

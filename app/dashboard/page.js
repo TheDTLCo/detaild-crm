@@ -20,6 +20,301 @@ function TabButton({ label, active, onClick }) {
   )
 }
 
+function StatCard({ label, value, subtext, darkMode, valueClassName = "" }) {
+  return (
+    <div
+      className={`rounded-2xl p-5 shadow ${
+        darkMode ? "bg-gray-800" : "bg-white"
+      }`}
+    >
+      <p className="text-sm text-gray-500">{label}</p>
+      <p className={`mt-2 text-2xl font-bold ${valueClassName}`}>{value}</p>
+      {subtext ? <p className="mt-2 text-xs text-gray-500">{subtext}</p> : null}
+    </div>
+  )
+}
+
+function SectionCard({ title, children, darkMode, rightSlot = null }) {
+  return (
+    <div
+      className={`rounded-2xl p-5 shadow ${
+        darkMode ? "bg-gray-800" : "bg-white"
+      }`}
+    >
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h3 className="text-lg font-semibold">{title}</h3>
+        {rightSlot}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function QuickActionButton({ children, onClick, className = "" }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-xl px-4 py-3 text-sm font-semibold transition hover:scale-[1.02] ${className}`}
+    >
+      {children}
+    </button>
+  )
+}
+
+function StatusBadge({ status }) {
+  const classes =
+    status === "Booked"
+      ? "bg-blue-500"
+      : status === "In Progress"
+      ? "bg-yellow-500"
+      : "bg-green-500"
+
+  return (
+    <span className={`rounded-full px-2 py-1 text-xs text-white ${classes}`}>
+      {status}
+    </span>
+  )
+}
+
+function PaymentBadge({ paymentStatus }) {
+  const paid = (paymentStatus || "Unpaid") === "Paid"
+
+  return (
+    <span
+      className={`rounded-full px-2 py-1 text-xs text-white ${
+        paid ? "bg-emerald-600" : "bg-red-500"
+      }`}
+    >
+      {paymentStatus || "Unpaid"}
+    </span>
+  )
+}
+
+function JobCard({
+  job,
+  darkMode,
+  onOpen,
+  onCall,
+  onMaps,
+  onShare,
+  onMarkDone,
+  onMarkPaid,
+  onInvoice,
+  onDelete,
+}) {
+  const total =
+    job.pricing_breakdown?.reduce(
+      (sum, item) => sum + (parseFloat(item.cost) || 0),
+      0
+    ) || job.price || 0
+
+  const formattedDate = job.job_date
+    ? new Date(job.job_date).toLocaleDateString()
+    : "Not set"
+
+  const beforePreview = job.before_photos?.[0]
+  const afterPreview = job.after_photos?.[0]
+  const primaryDetail = job.job_details?.[0] || "No service detail yet"
+
+  return (
+    <div
+      onClick={() => onOpen(job)}
+      className={`cursor-pointer rounded-2xl p-4 shadow-md transition hover:shadow-xl ${
+        darkMode ? "bg-gray-800/90" : "bg-white/90"
+      }`}
+    >
+      <div className="flex flex-col gap-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-lg font-semibold">{job.customer_name}</p>
+            <p className="text-sm text-gray-500">{job.vehicle}</p>
+            <p className="mt-1 text-xs text-gray-400">{formattedDate}</p>
+          </div>
+
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            <StatusBadge status={job.status} />
+            <PaymentBadge paymentStatus={job.payment_status} />
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-white/10 bg-black/10 p-3">
+          <p className="truncate text-sm font-medium">{primaryDetail}</p>
+          {job.job_address && (
+            <p className="mt-1 truncate text-xs text-gray-500">{job.job_address}</p>
+          )}
+          {job.customer_notes && (
+            <p className="mt-2 line-clamp-2 text-xs text-gray-400">
+              Notes: {job.customer_notes}
+            </p>
+          )}
+        </div>
+
+        {(beforePreview || afterPreview) && (
+          <div
+            className={`rounded-2xl border p-3 ${
+              darkMode
+                ? "border-gray-700 bg-gray-900"
+                : "border-gray-200 bg-gray-50"
+            }`}
+          >
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              Before / After
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="mb-2 text-xs font-medium text-gray-500">Before</p>
+                {beforePreview ? (
+                  <img
+                    src={beforePreview}
+                    alt="Before preview"
+                    className="h-24 w-full rounded-xl border object-cover"
+                  />
+                ) : (
+                  <div className="flex h-24 items-center justify-center rounded-xl border border-dashed text-xs text-gray-400">
+                    None
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs font-medium text-gray-500">After</p>
+                {afterPreview ? (
+                  <img
+                    src={afterPreview}
+                    alt="After preview"
+                    className="h-24 w-full rounded-xl border object-cover"
+                  />
+                ) : (
+                  <div className="flex h-24 items-center justify-center rounded-xl border border-dashed text-xs text-gray-400">
+                    None
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs text-gray-500">Job Total</p>
+            <p className="text-xl font-bold text-teal-500">${total.toFixed(2)}</p>
+          </div>
+
+          <div className="flex gap-2 text-xs text-gray-400">
+            <span>Before: {job.before_photos?.length || 0}</span>
+            <span>After: {job.after_photos?.length || 0}</span>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onCall(job.customer_phone)
+            }}
+            className="rounded bg-gray-700 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-gray-600"
+          >
+            Call
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onMaps(job.job_address)
+            }}
+            className="rounded bg-indigo-600 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-indigo-500"
+          >
+            Maps
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onShare(job)
+            }}
+            className="rounded bg-purple-600 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-purple-500"
+          >
+            Share
+          </button>
+
+          {job.status !== "Done" && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onMarkDone(job.id)
+              }}
+              className="rounded bg-green-600 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-green-500"
+            >
+              Mark Done
+            </button>
+          )}
+
+          {(job.payment_status || "Unpaid") !== "Paid" && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onMarkPaid(job.id)
+              }}
+              className="rounded bg-emerald-600 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-emerald-500"
+            >
+              Mark Paid
+            </button>
+          )}
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onInvoice(job)
+            }}
+            className="rounded bg-blue-500 px-3 py-2 text-xs text-white transition hover:scale-105"
+          >
+            Invoice
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete(job.id)
+            }}
+            className="rounded bg-red-500 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-red-600"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CompactJobRow({ job, onOpen }) {
+  const total =
+    job.pricing_breakdown?.reduce(
+      (sum, item) => sum + (parseFloat(item.cost) || 0),
+      0
+    ) || job.price || 0
+
+  return (
+    <button
+      onClick={() => onOpen(job)}
+      className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-left transition hover:bg-black/15"
+    >
+      <div className="min-w-0">
+        <p className="truncate font-semibold">{job.customer_name}</p>
+        <p className="truncate text-sm text-gray-500">
+          {job.vehicle} • {job.job_details?.[0] || "No service detail"}
+        </p>
+      </div>
+
+      <div className="ml-4 flex shrink-0 items-center gap-2">
+        <StatusBadge status={job.status} />
+        <span className="text-sm font-semibold text-teal-500">
+          ${total.toFixed(2)}
+        </span>
+      </div>
+    </button>
+  )
+}
+
 function PhotoGallery({
   title,
   photos,
@@ -493,27 +788,10 @@ function JobModal({
                               </p>
                             </div>
                             <div className="flex flex-col items-end gap-1">
-                              <span
-                                className={`rounded-full px-2 py-1 text-xs text-white ${
-                                  historyJob.status === "Booked"
-                                    ? "bg-blue-500"
-                                    : historyJob.status === "In Progress"
-                                    ? "bg-yellow-500"
-                                    : "bg-green-500"
-                                }`}
-                              >
-                                {historyJob.status}
-                              </span>
-                              <span
-                                className={`rounded-full px-2 py-1 text-xs text-white ${
-                                  (historyJob.payment_status || "Unpaid") ===
-                                  "Paid"
-                                    ? "bg-emerald-600"
-                                    : "bg-red-500"
-                                }`}
-                              >
-                                {historyJob.payment_status || "Unpaid"}
-                              </span>
+                              <StatusBadge status={historyJob.status} />
+                              <PaymentBadge
+                                paymentStatus={historyJob.payment_status}
+                              />
                             </div>
                           </div>
 
@@ -984,9 +1262,41 @@ export default function DashboardPage() {
     doc.save(`invoice-${job.customer_name || "job"}.pdf`)
   }
 
+  const normalizedToday = new Date().toISOString().split("T")[0]
+
+  const normalizedTomorrow = (() => {
+    const d = new Date()
+    d.setDate(d.getDate() + 1)
+    return d.toISOString().split("T")[0]
+  })()
+
+  const todaysJobs = useMemo(() => {
+    return jobs.filter(
+      (job) => String(job.job_date || "").split("T")[0] === normalizedToday
+    )
+  }, [jobs, normalizedToday])
+
+  const tomorrowJobs = useMemo(() => {
+    return jobs.filter(
+      (job) => String(job.job_date || "").split("T")[0] === normalizedTomorrow
+    )
+  }, [jobs, normalizedTomorrow])
+
+  const upcomingJobs = useMemo(() => {
+    return jobs
+      .filter((job) => {
+        const date = String(job.job_date || "").split("T")[0]
+        return date > normalizedTomorrow
+      })
+      .sort((a, b) => new Date(a.job_date || 0) - new Date(b.job_date || 0))
+  }, [jobs, normalizedTomorrow])
+
   const filteredJobs = useMemo(() => {
     return jobs
-      .filter((job) => !filterDate || String(job.job_date || "").split("T")[0] === filterDate)
+      .filter(
+        (job) =>
+          !filterDate || String(job.job_date || "").split("T")[0] === filterDate
+      )
       .filter((job) => filterStatus === "All" || job.status === filterStatus)
       .sort((a, b) => new Date(a.job_date || 0) - new Date(b.job_date || 0))
   }, [jobs, filterDate, filterStatus])
@@ -1076,20 +1386,38 @@ export default function DashboardPage() {
     ).length
   }, [filteredFinanceJobs])
 
+  const completedThisWeekCount = useMemo(() => {
+    const now = new Date()
+    const startOfWeek = new Date(now)
+    startOfWeek.setDate(now.getDate() - now.getDay())
+    startOfWeek.setHours(0, 0, 0, 0)
+
+    return jobs.filter((job) => {
+      if (job.status !== "Done" || !job.job_date) return false
+      return new Date(job.job_date) >= startOfWeek
+    }).length
+  }, [jobs])
+
+  const thisWeekRevenue = useMemo(() => {
+    const now = new Date()
+    const startOfWeek = new Date(now)
+    startOfWeek.setDate(now.getDate() - now.getDay())
+    startOfWeek.setHours(0, 0, 0, 0)
+
+    return jobs.reduce((sum, job) => {
+      if (!job.job_date || new Date(job.job_date) < startOfWeek) return sum
+      const jobTotal =
+        job.pricing_breakdown?.reduce(
+          (s, item) => s + (parseFloat(item.cost) || 0),
+          0
+        ) || job.price || 0
+      return sum + jobTotal
+    }, 0)
+  }, [jobs])
+
   const netProfit = totalRevenue - totalExpenses
   const totalRevenueWithGst = totalRevenue * 1.1
   const outstandingAmount = unpaidRevenue
-
-  const today = new Date().toISOString().split("T")[0]
-  const todaysJobs = jobs.filter(
-    (job) => String(job.job_date || "").split("T")[0] === today
-  )
-
-  const statusColors = {
-    Booked: "bg-blue-500",
-    "In Progress": "bg-yellow-500",
-    Done: "bg-green-500",
-  }
 
   const customerSummaries = useMemo(() => {
     const grouped = {}
@@ -1136,18 +1464,18 @@ export default function DashboardPage() {
       }`}
     >
       <div className="border-b border-white/10 bg-black shadow-lg">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
           <div className="flex items-center gap-3 sm:gap-4">
             <img
               src="/logo.png"
               alt="The DTL Co. logo"
-              className="h-12 w-auto object-contain sm:h-16"
+              className="h-6 w-auto object-contain scale-90"
             />
             <div className="hidden sm:block">
               <p className="text-lg font-bold tracking-[0.2em] text-white">
                 THE DTL CO.
               </p>
-              <p className="text-xs tracking-[0.4em] text-gray-400">
+              <p className="text-xs tracking-[0.35em] text-gray-400">
                 AUTO DETAILING CRM
               </p>
             </div>
@@ -1165,7 +1493,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
+      <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
         <div className="overflow-x-auto pb-1">
           <div className="flex w-max gap-2">
             <TabButton
@@ -1194,485 +1522,378 @@ export default function DashboardPage() {
         {activeTab === "Dashboard" && (
           <>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <div
-                className={`rounded-2xl p-4 shadow ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-              >
-                <p className="text-sm text-gray-500">Total Jobs</p>
-                <p className="mt-1 text-2xl font-bold">{jobs.length}</p>
+              <StatCard
+                label="Today’s Jobs"
+                value={todaysJobs.length}
+                subtext="Scheduled for today"
+                darkMode={darkMode}
+              />
+              <StatCard
+                label="Tomorrow"
+                value={tomorrowJobs.length}
+                subtext="Jobs lined up next"
+                darkMode={darkMode}
+              />
+              <StatCard
+                label="This Week Revenue"
+                value={`$${thisWeekRevenue.toFixed(2)}`}
+                subtext="Current week total"
+                darkMode={darkMode}
+                valueClassName="text-green-500"
+              />
+              <StatCard
+                label="Completed This Week"
+                value={completedThisWeekCount}
+                subtext="Jobs marked done"
+                darkMode={darkMode}
+                valueClassName="text-teal-500"
+              />
+            </div>
+
+            <SectionCard
+              title="Quick Actions"
+              darkMode={darkMode}
+            >
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <QuickActionButton
+                  onClick={addJob}
+                  className="bg-teal-500 text-white shadow hover:bg-teal-600"
+                >
+                  + Add Job
+                </QuickActionButton>
+
+                <QuickActionButton
+                  onClick={() => setActiveTab("Jobs")}
+                  className="bg-blue-500 text-white shadow hover:bg-blue-600"
+                >
+                  View All Jobs
+                </QuickActionButton>
+
+                <QuickActionButton
+                  onClick={() => setActiveTab("Finance")}
+                  className="bg-purple-600 text-white shadow hover:bg-purple-700"
+                >
+                  Finance Overview
+                </QuickActionButton>
+
+                <QuickActionButton
+                  onClick={() => setActiveTab("Customers")}
+                  className="bg-gray-700 text-white shadow hover:bg-gray-800"
+                >
+                  Customer List
+                </QuickActionButton>
               </div>
-              <div
-                className={`rounded-2xl p-4 shadow ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-              >
-                <p className="text-sm text-gray-500">Revenue</p>
-                <p className="mt-1 text-2xl font-bold text-green-500">
-                  ${totalRevenue.toFixed(2)}
-                </p>
+            </SectionCard>
+
+            <div className="grid gap-6 xl:grid-cols-3">
+              <div className="xl:col-span-1">
+                <SectionCard title="Today" darkMode={darkMode}>
+                  {todaysJobs.length > 0 ? (
+                    <div className="space-y-3">
+                      {todaysJobs.map((job) => (
+                        <CompactJobRow
+                          key={job.id}
+                          job={job}
+                          onOpen={setSelectedJob}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No jobs booked today.</p>
+                  )}
+                </SectionCard>
               </div>
-              <div
-                className={`rounded-2xl p-4 shadow ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-              >
-                <p className="text-sm text-gray-500">Expenses</p>
-                <p className="mt-1 text-2xl font-bold text-red-500">
-                  ${totalExpenses.toFixed(2)}
-                </p>
+
+              <div className="xl:col-span-1">
+                <SectionCard title="Tomorrow" darkMode={darkMode}>
+                  {tomorrowJobs.length > 0 ? (
+                    <div className="space-y-3">
+                      {tomorrowJobs.map((job) => (
+                        <CompactJobRow
+                          key={job.id}
+                          job={job}
+                          onOpen={setSelectedJob}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      No jobs locked in for tomorrow.
+                    </p>
+                  )}
+                </SectionCard>
               </div>
-              <div
-                className={`rounded-2xl p-4 shadow ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-              >
-                <p className="text-sm text-gray-500">Net Profit</p>
-                <p className="mt-1 text-2xl font-bold text-teal-500">
-                  ${netProfit.toFixed(2)}
-                </p>
+
+              <div className="xl:col-span-1">
+                <SectionCard title="Upcoming" darkMode={darkMode}>
+                  {upcomingJobs.length > 0 ? (
+                    <div className="space-y-3">
+                      {upcomingJobs.slice(0, 5).map((job) => (
+                        <CompactJobRow
+                          key={job.id}
+                          job={job}
+                          onOpen={setSelectedJob}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No future jobs yet.</p>
+                  )}
+                </SectionCard>
               </div>
             </div>
 
-            <div
-              className={`rounded-2xl p-4 shadow ${
-                darkMode ? "bg-gray-800/90" : "bg-white/90"
-              }`}
-            >
-              <h3 className="mb-2 text-sm font-semibold">Today's Bookings</h3>
-              {todaysJobs.length > 0 ? (
-                <div className="space-y-2">
-                  {todaysJobs.map((job) => (
-                    <div
-                      key={job.id}
-                      className="flex items-center justify-between gap-3 text-sm"
+            <div className="grid gap-6 xl:grid-cols-3">
+              <div className="xl:col-span-2">
+                <SectionCard
+                  title="Next Jobs In Queue"
+                  darkMode={darkMode}
+                  rightSlot={
+                    <button
+                      onClick={() => setActiveTab("Jobs")}
+                      className="text-sm text-teal-500 hover:underline"
                     >
-                      <span className="truncate">
-                        {job.customer_name} • {job.vehicle}
-                      </span>
-                      <div className="flex gap-2">
-                        <span
-                          className={`shrink-0 rounded-full px-2 py-1 text-xs text-white ${
-                            statusColors[job.status] || "bg-gray-500"
-                          }`}
-                        >
-                          {job.status}
-                        </span>
-                        <span
-                          className={`shrink-0 rounded-full px-2 py-1 text-xs text-white ${
-                            (job.payment_status || "Unpaid") === "Paid"
-                              ? "bg-emerald-600"
-                              : "bg-red-500"
-                          }`}
-                        >
-                          {job.payment_status || "Unpaid"}
-                        </span>
-                      </div>
+                      View all
+                    </button>
+                  }
+                >
+                  {filteredJobs.length > 0 ? (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {filteredJobs.slice(0, 4).map((job) => (
+                        <JobCard
+                          key={job.id}
+                          job={job}
+                          darkMode={darkMode}
+                          onOpen={setSelectedJob}
+                          onCall={openCall}
+                          onMaps={openMaps}
+                          onShare={generateShareImage}
+                          onMarkDone={markJobDone}
+                          onMarkPaid={markJobPaid}
+                          onInvoice={generateInvoice}
+                          onDelete={deleteJob}
+                        />
+                      ))}
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500">No jobs booked today</p>
-              )}
+                  ) : (
+                    <p className="text-sm text-gray-500">No jobs to show.</p>
+                  )}
+                </SectionCard>
+              </div>
+
+              <div className="xl:col-span-1">
+                <SectionCard title="Snapshot" darkMode={darkMode}>
+                  <div className="space-y-4">
+                    <div className="rounded-xl border border-white/10 bg-black/10 p-4">
+                      <p className="text-sm text-gray-500">Paid Revenue</p>
+                      <p className="mt-1 text-2xl font-bold text-emerald-500">
+                        ${paidRevenue.toFixed(2)}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-white/10 bg-black/10 p-4">
+                      <p className="text-sm text-gray-500">Outstanding</p>
+                      <p className="mt-1 text-2xl font-bold text-orange-500">
+                        ${outstandingAmount.toFixed(2)}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-white/10 bg-black/10 p-4">
+                      <p className="text-sm text-gray-500">Expenses</p>
+                      <p className="mt-1 text-2xl font-bold text-red-500">
+                        ${totalExpenses.toFixed(2)}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-white/10 bg-black/10 p-4">
+                      <p className="text-sm text-gray-500">Net Profit</p>
+                      <p className="mt-1 text-2xl font-bold text-teal-500">
+                        ${netProfit.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </SectionCard>
+              </div>
             </div>
           </>
         )}
 
         {activeTab === "Jobs" && (
           <>
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="rounded border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
-              >
-                <option>All</option>
-                <option>Booked</option>
-                <option>In Progress</option>
-                <option>Done</option>
-              </select>
-
-              <input
-                type="date"
-                value={filterDate}
-                onChange={(e) => setFilterDate(e.target.value)}
-                className="rounded border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
-              />
-
-              <button
-                onClick={addJob}
-                className="rounded bg-teal-500 px-4 py-3 text-white shadow transition hover:scale-105 hover:bg-teal-600"
-              >
-                + Add Job
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {filteredJobs.map((job) => {
-                const total =
-                  job.pricing_breakdown?.reduce(
-                    (sum, item) => sum + (parseFloat(item.cost) || 0),
-                    0
-                  ) || job.price || 0
-
-                const gst = total * 0.1
-                const finalTotal = total + gst
-                const paymentStatus = job.payment_status || "Unpaid"
-                const beforePreview = job.before_photos?.[0]
-                const afterPreview = job.after_photos?.[0]
-
-                return (
-                  <div
-                    key={job.id}
-                    onClick={() => setSelectedJob(job)}
-                    className={`cursor-pointer rounded-2xl p-4 shadow-md transition hover:shadow-xl ${
-                      darkMode ? "bg-gray-800/90" : "bg-white/90"
-                    }`}
+            <SectionCard
+              title="Jobs"
+              darkMode={darkMode}
+              rightSlot={
+                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="rounded border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
                   >
-                    <div className="flex flex-col gap-4">
-                      <div className="space-y-1">
-                        <p className="flex items-center gap-2 font-semibold">
-                          <span
-                            className={`h-3 w-3 rounded-full ${
-                              statusColors[job.status] || "bg-gray-500"
-                            }`}
-                          ></span>
-                          {job.customer_name}
-                        </p>
-                        <p className="text-sm text-gray-500">{job.vehicle}</p>
-                        {job.customer_phone && (
-                          <p className="text-sm text-gray-500">
-                            {job.customer_phone}
-                          </p>
-                        )}
-                        {job.job_address && (
-                          <p className="truncate text-sm text-gray-500">
-                            {job.job_address}
-                          </p>
-                        )}
-                        {job.customer_notes && (
-                          <p className="line-clamp-2 text-xs text-gray-400">
-                            Notes: {job.customer_notes}
-                          </p>
-                        )}
-                        <div className="flex gap-3 text-xs text-gray-400">
-                          <span>Before: {job.before_photos?.length || 0}</span>
-                          <span>After: {job.after_photos?.length || 0}</span>
-                        </div>
-                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Date:{" "}
-                          {job.job_date
-                            ? new Date(job.job_date).toLocaleDateString()
-                            : "Not set"}
-                        </p>
-                        {job.job_details?.[0] && (
-                          <p className="truncate text-xs text-gray-400">
-                            {job.job_details[0]}
-                          </p>
-                        )}
-                      </div>
+                    <option>All</option>
+                    <option>Booked</option>
+                    <option>In Progress</option>
+                    <option>Done</option>
+                  </select>
 
-                      {(beforePreview || afterPreview) && (
-                        <div
-                          className={`rounded-2xl border p-3 ${
-                            darkMode
-                              ? "border-gray-700 bg-gray-900"
-                              : "border-gray-200 bg-gray-50"
-                          }`}
-                        >
-                          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                            Before / After
-                          </p>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <p className="mb-2 text-xs font-medium text-gray-500">
-                                Before
-                              </p>
-                              {beforePreview ? (
-                                <img
-                                  src={beforePreview}
-                                  alt="Before preview"
-                                  className="h-28 w-full rounded-xl border object-cover"
-                                />
-                              ) : (
-                                <div className="flex h-28 items-center justify-center rounded-xl border border-dashed text-xs text-gray-400">
-                                  No before photo
-                                </div>
-                              )}
-                            </div>
+                  <input
+                    type="date"
+                    value={filterDate}
+                    onChange={(e) => setFilterDate(e.target.value)}
+                    className="rounded border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
+                  />
 
-                            <div>
-                              <p className="mb-2 text-xs font-medium text-gray-500">
-                                After
-                              </p>
-                              {afterPreview ? (
-                                <img
-                                  src={afterPreview}
-                                  alt="After preview"
-                                  className="h-28 w-full rounded-xl border object-cover"
-                                />
-                              ) : (
-                                <div className="flex h-28 items-center justify-center rounded-xl border border-dashed text-xs text-gray-400">
-                                  No after photo
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span
-                          className={`rounded-full px-2 py-1 text-xs text-white ${
-                            statusColors[job.status] || "bg-gray-500"
-                          }`}
-                        >
-                          {job.status}
-                        </span>
-
-                        <span
-                          className={`rounded-full px-2 py-1 text-xs text-white ${
-                            paymentStatus === "Paid"
-                              ? "bg-emerald-600"
-                              : "bg-red-500"
-                          }`}
-                        >
-                          {paymentStatus}
-                        </span>
-
-                        <p className="mr-auto text-lg font-semibold text-teal-600">
-                          ${finalTotal.toFixed(2)}
-                        </p>
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            openCall(job.customer_phone)
-                          }}
-                          className="rounded bg-gray-700 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-gray-600"
-                        >
-                          Call
-                        </button>
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            openMaps(job.job_address)
-                          }}
-                          className="rounded bg-indigo-600 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-indigo-500"
-                        >
-                          Maps
-                        </button>
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            generateShareImage(job)
-                          }}
-                          className="rounded bg-purple-600 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-purple-500"
-                        >
-                          Share
-                        </button>
-
-                        {job.status !== "Done" && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              markJobDone(job.id)
-                            }}
-                            className="rounded bg-green-600 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-green-500"
-                          >
-                            Mark Done
-                          </button>
-                        )}
-
-                        {paymentStatus !== "Paid" && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              markJobPaid(job.id)
-                            }}
-                            className="rounded bg-emerald-600 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-emerald-500"
-                          >
-                            Mark Paid
-                          </button>
-                        )}
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            generateInvoice(job)
-                          }}
-                          className="rounded bg-blue-500 px-3 py-2 text-xs text-white transition hover:scale-105"
-                        >
-                          Invoice
-                        </button>
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            deleteJob(job.id)
-                          }}
-                          className="rounded bg-red-500 px-3 py-2 text-xs text-white transition hover:scale-105 hover:bg-red-600"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+                  <button
+                    onClick={addJob}
+                    className="rounded bg-teal-500 px-4 py-3 text-white shadow transition hover:scale-105 hover:bg-teal-600"
+                  >
+                    + Add Job
+                  </button>
+                </div>
+              }
+            >
+              {filteredJobs.length > 0 ? (
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {filteredJobs.map((job) => (
+                    <JobCard
+                      key={job.id}
+                      job={job}
+                      darkMode={darkMode}
+                      onOpen={setSelectedJob}
+                      onCall={openCall}
+                      onMaps={openMaps}
+                      onShare={generateShareImage}
+                      onMarkDone={markJobDone}
+                      onMarkPaid={markJobPaid}
+                      onInvoice={generateInvoice}
+                      onDelete={deleteJob}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">No jobs match your filters.</p>
+              )}
+            </SectionCard>
           </>
         )}
 
         {activeTab === "Customers" && (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {customerSummaries.map((customer) => (
-              <div
-                key={customer.name}
-                className={`rounded-2xl p-4 shadow ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-              >
-                <p className="text-lg font-bold">{customer.name}</p>
-                <p className="text-sm text-gray-500">
-                  Last vehicle: {customer.lastVehicle || "N/A"}
-                </p>
-                <p className="text-sm text-gray-500">
-                  Last booking:{" "}
-                  {customer.lastDate
-                    ? new Date(customer.lastDate).toLocaleDateString()
-                    : "N/A"}
-                </p>
+          <SectionCard title="Customers" darkMode={darkMode}>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {customerSummaries.map((customer) => (
+                <div
+                  key={customer.name}
+                  className={`rounded-2xl p-4 shadow ${
+                    darkMode ? "bg-gray-900" : "bg-gray-50"
+                  }`}
+                >
+                  <p className="text-lg font-bold">{customer.name}</p>
+                  <p className="text-sm text-gray-500">
+                    Last vehicle: {customer.lastVehicle || "N/A"}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Last booking:{" "}
+                    {customer.lastDate
+                      ? new Date(customer.lastDate).toLocaleDateString()
+                      : "N/A"}
+                  </p>
 
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="rounded-full bg-gray-200 px-3 py-1 text-xs text-gray-800 dark:bg-gray-700 dark:text-white">
-                    Jobs: {customer.jobs}
-                  </span>
-                  <span className="font-bold text-teal-500">
-                    ${customer.totalSpend.toFixed(2)}
-                  </span>
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="rounded-full bg-gray-200 px-3 py-1 text-xs text-gray-800 dark:bg-gray-700 dark:text-white">
+                      Jobs: {customer.jobs}
+                    </span>
+                    <span className="font-bold text-teal-500">
+                      ${customer.totalSpend.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </SectionCard>
         )}
 
         {activeTab === "Finance" && (
           <>
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-              <p className="text-sm font-semibold">Finance Period:</p>
-              <select
-                value={financePeriod}
-                onChange={(e) => setFinancePeriod(e.target.value)}
-                className="rounded border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
-              >
-                <option>All Time</option>
-                <option>This Month</option>
-                <option>This Week</option>
-              </select>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <div
-                className={`rounded-2xl p-4 shadow ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-              >
-                <p className="text-sm text-gray-500">Revenue</p>
-                <p className="mt-1 text-2xl font-bold text-green-500">
-                  ${totalRevenue.toFixed(2)}
-                </p>
-              </div>
-              <div
-                className={`rounded-2xl p-4 shadow ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-              >
-                <p className="text-sm text-gray-500">Expenses</p>
-                <p className="mt-1 text-2xl font-bold text-red-500">
-                  ${totalExpenses.toFixed(2)}
-                </p>
-              </div>
-              <div
-                className={`rounded-2xl p-4 shadow ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-              >
-                <p className="text-sm text-gray-500">Net Profit</p>
-                <p className="mt-1 text-2xl font-bold text-teal-500">
-                  ${netProfit.toFixed(2)}
-                </p>
-              </div>
-              <div
-                className={`rounded-2xl p-4 shadow ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-              >
-                <p className="text-sm text-gray-500">Revenue incl. GST</p>
-                <p className="mt-1 text-2xl font-bold text-blue-500">
-                  ${totalRevenueWithGst.toFixed(2)}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <div
-                className={`rounded-2xl p-4 shadow ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-              >
-                <p className="text-sm text-gray-500">Paid Revenue</p>
-                <p className="mt-1 text-2xl font-bold text-emerald-500">
-                  ${paidRevenue.toFixed(2)}
-                </p>
-              </div>
-              <div
-                className={`rounded-2xl p-4 shadow ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-              >
-                <p className="text-sm text-gray-500">Unpaid Revenue</p>
-                <p className="mt-1 text-2xl font-bold text-red-500">
-                  ${unpaidRevenue.toFixed(2)}
-                </p>
-              </div>
-              <div
-                className={`rounded-2xl p-4 shadow ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-              >
-                <p className="text-sm text-gray-500">Paid Jobs</p>
-                <p className="mt-1 text-2xl font-bold text-emerald-500">
-                  {paidJobsCount}
-                </p>
-              </div>
-              <div
-                className={`rounded-2xl p-4 shadow ${
-                  darkMode ? "bg-gray-800" : "bg-white"
-                }`}
-              >
-                <p className="text-sm text-gray-500">Outstanding</p>
-                <p className="mt-1 text-2xl font-bold text-orange-500">
-                  ${outstandingAmount.toFixed(2)}
-                </p>
-              </div>
-            </div>
-
-            <div
-              className={`rounded-2xl p-4 shadow ${
-                darkMode ? "bg-gray-800" : "bg-white"
-              }`}
+            <SectionCard
+              title="Finance"
+              darkMode={darkMode}
+              rightSlot={
+                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                  <p className="text-sm font-semibold">Finance Period:</p>
+                  <select
+                    value={financePeriod}
+                    onChange={(e) => setFinancePeriod(e.target.value)}
+                    className="rounded border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
+                  >
+                    <option>All Time</option>
+                    <option>This Month</option>
+                    <option>This Week</option>
+                  </select>
+                </div>
+              }
             >
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border border-gray-200/20 p-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <StatCard
+                  label="Revenue"
+                  value={`$${totalRevenue.toFixed(2)}`}
+                  darkMode={darkMode}
+                  valueClassName="text-green-500"
+                />
+                <StatCard
+                  label="Expenses"
+                  value={`$${totalExpenses.toFixed(2)}`}
+                  darkMode={darkMode}
+                  valueClassName="text-red-500"
+                />
+                <StatCard
+                  label="Net Profit"
+                  value={`$${netProfit.toFixed(2)}`}
+                  darkMode={darkMode}
+                  valueClassName="text-teal-500"
+                />
+                <StatCard
+                  label="Revenue incl. GST"
+                  value={`$${totalRevenueWithGst.toFixed(2)}`}
+                  darkMode={darkMode}
+                  valueClassName="text-blue-500"
+                />
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <StatCard
+                  label="Paid Revenue"
+                  value={`$${paidRevenue.toFixed(2)}`}
+                  darkMode={darkMode}
+                  valueClassName="text-emerald-500"
+                />
+                <StatCard
+                  label="Unpaid Revenue"
+                  value={`$${unpaidRevenue.toFixed(2)}`}
+                  darkMode={darkMode}
+                  valueClassName="text-red-500"
+                />
+                <StatCard
+                  label="Paid Jobs"
+                  value={paidJobsCount}
+                  darkMode={darkMode}
+                  valueClassName="text-emerald-500"
+                />
+                <StatCard
+                  label="Outstanding"
+                  value={`$${outstandingAmount.toFixed(2)}`}
+                  darkMode={darkMode}
+                  valueClassName="text-orange-500"
+                />
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="rounded-xl border border-white/10 p-4">
                   <p className="text-sm text-gray-500">Unpaid Jobs</p>
                   <p className="mt-1 text-2xl font-bold text-red-500">
                     {unpaidJobsCount}
                   </p>
                 </div>
-                <div className="rounded-xl border border-gray-200/20 p-4">
+                <div className="rounded-xl border border-white/10 p-4">
                   <p className="text-sm text-gray-500">Cash Collected Rate</p>
                   <p className="mt-1 text-2xl font-bold text-teal-500">
                     {totalRevenue > 0
@@ -1681,14 +1902,9 @@ export default function DashboardPage() {
                   </p>
                 </div>
               </div>
-            </div>
+            </SectionCard>
 
-            <div
-              className={`rounded-2xl p-4 shadow ${
-                darkMode ? "bg-gray-800" : "bg-white"
-              }`}
-            >
-              <h3 className="mb-4 text-sm font-semibold">Add Expense</h3>
+            <SectionCard title="Add Expense" darkMode={darkMode}>
               <form
                 onSubmit={addExpense}
                 className="grid grid-cols-1 gap-3 md:grid-cols-4"
@@ -1736,20 +1952,9 @@ export default function DashboardPage() {
                   className="md:col-span-4 rounded border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
                 />
               </form>
-            </div>
+            </SectionCard>
 
-            <div
-              className={`rounded-2xl p-4 shadow ${
-                darkMode ? "bg-gray-800" : "bg-white"
-              }`}
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Recent Expenses</h3>
-                <p className="text-sm text-gray-500">
-                  Showing: ${totalExpenses.toFixed(2)}
-                </p>
-              </div>
-
+            <SectionCard title="Recent Expenses" darkMode={darkMode}>
               {filteredFinanceExpenses.length > 0 ? (
                 <div className="space-y-2">
                   {filteredFinanceExpenses.slice(0, 10).map((expense) => (
@@ -1786,11 +1991,9 @@ export default function DashboardPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">
-                  No expenses in this period
-                </p>
+                <p className="text-sm text-gray-500">No expenses in this period</p>
               )}
-            </div>
+            </SectionCard>
           </>
         )}
       </div>

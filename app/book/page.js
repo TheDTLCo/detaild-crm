@@ -42,6 +42,7 @@ function RevealSection({ children, delay = 0, className = "" }) {
 export default function BookingPage() {
   const [form, setForm] = useState({
     customer_name: "",
+    customer_email: "",
     customer_phone: "",
     vehicle: "",
     job_address: "",
@@ -90,11 +91,37 @@ export default function BookingPage() {
 
       const data = await res.json()
 
-      if (!res.ok) throw new Error(data.error)
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to submit enquiry")
+      }
+
+      const emailRes = await fetch("/api/send-quote-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customer_name: form.customer_name,
+          customer_email: form.customer_email,
+          customer_phone: form.customer_phone,
+          vehicle: form.vehicle,
+          job_address: form.job_address,
+          job_date: form.job_date,
+          service: form.service,
+          notes: form.notes,
+        }),
+      })
+
+      const emailData = await emailRes.json()
+
+      if (!emailRes.ok) {
+        throw new Error(emailData.error || "Enquiry saved, but email failed to send")
+      }
 
       setSuccess(true)
       setForm({
         customer_name: "",
+        customer_email: "",
         customer_phone: "",
         vehicle: "",
         job_address: "",
@@ -168,8 +195,8 @@ export default function BookingPage() {
 
             <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-gray-400 sm:text-base">
               Mobile detailing built around gloss, refinement, and long-term
-              care. Book your enquiry below and we’ll get your detail locked in
-              properly.
+              care. Submit your enquiry below and we’ll be in touch with a
+              tailored quote.
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -197,7 +224,7 @@ export default function BookingPage() {
               </h2>
               <p className="mt-2 text-sm text-gray-400">
                 Choose a starting point and we’ll confirm the final details
-                after booking.
+                after your enquiry.
               </p>
             </div>
           </RevealSection>
@@ -287,7 +314,7 @@ export default function BookingPage() {
 
           <RevealSection delay={240}>
             <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
-              <h3 className="text-lg font-semibold">Straightforward Booking</h3>
+              <h3 className="text-lg font-semibold">Straightforward Enquiry</h3>
               <p className="mt-3 text-sm leading-6 text-gray-400">
                 Submit once, lock in your details, and your enquiry drops
                 straight into the system for fast follow-up.
@@ -302,10 +329,10 @@ export default function BookingPage() {
           <RevealSection>
             <div className="mb-6 text-center">
               <p className="text-xs uppercase tracking-[0.35em] text-gray-500">
-                Secure Booking
+                Secure Enquiry
               </p>
               <h2 className="mt-3 text-2xl font-bold sm:text-3xl">
-                Lock In Your Detail
+                Request Your Quote
               </h2>
               <p className="mt-3 text-sm text-gray-400 sm:text-base">
                 Fill out the form below and we’ll get your enquiry into the
@@ -318,7 +345,7 @@ export default function BookingPage() {
             <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5 shadow-[0_25px_80px_rgba(0,0,0,0.35)] backdrop-blur sm:p-8">
               {success && (
                 <div className="mb-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-300">
-                  Enquiry Submitted. We’ll be in touch shortly to confirm details.
+                  Enquiry submitted. We’ll be in touch shortly with your quote.
                 </div>
               )}
 
@@ -348,6 +375,24 @@ export default function BookingPage() {
 
                   <label className="block">
                     <span className="mb-2 block text-sm font-medium">
+                      Email Address
+                    </span>
+                    <input
+                      type="email"
+                      required
+                      value={form.customer_email}
+                      onChange={(e) =>
+                        updateField("customer_email", e.target.value)
+                      }
+                      className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-white outline-none transition duration-300 focus:border-teal-500 focus:bg-black/50"
+                      placeholder="john@email.com"
+                    />
+                  </label>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-medium">
                       Phone Number
                     </span>
                     <input
@@ -361,9 +406,7 @@ export default function BookingPage() {
                       placeholder="0400 000 000"
                     />
                   </label>
-                </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
                   <label className="block">
                     <span className="mb-2 block text-sm font-medium">
                       Vehicle
@@ -377,7 +420,9 @@ export default function BookingPage() {
                       placeholder="BMW M3"
                     />
                   </label>
+                </div>
 
+                <div className="grid gap-4 sm:grid-cols-2">
                   <label className="block">
                     <span className="mb-2 block text-sm font-medium">
                       Preferred Date
@@ -389,6 +434,24 @@ export default function BookingPage() {
                       onChange={(e) => updateField("job_date", e.target.value)}
                       className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-white outline-none transition duration-300 focus:border-teal-500 focus:bg-black/50"
                     />
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-medium">
+                      Service Wanted
+                    </span>
+                    <select
+                      required
+                      value={form.service}
+                      onChange={(e) => updateField("service", e.target.value)}
+                      className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-white outline-none transition duration-300 focus:border-teal-500 focus:bg-black/50"
+                    >
+                      <option value="">Select service</option>
+                      <option value="Mini Detail">Mini Detail</option>
+                      <option value="Full Detail">Full Detail</option>
+                      <option value="Paint Correction">Paint Correction</option>
+                      <option value="Ceramic Coating">Ceramic Coating</option>
+                    </select>
                   </label>
                 </div>
 
@@ -404,24 +467,6 @@ export default function BookingPage() {
                     className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-white outline-none transition duration-300 focus:border-teal-500 focus:bg-black/50"
                     placeholder="Street address"
                   />
-                </label>
-
-                <label className="block">
-                  <span className="mb-2 block text-sm font-medium">
-                    Service Wanted
-                  </span>
-                  <select
-                    required
-                    value={form.service}
-                    onChange={(e) => updateField("service", e.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-white outline-none transition duration-300 focus:border-teal-500 focus:bg-black/50"
-                  >
-                    <option value="">Select service</option>
-                    <option value="Mini Detail">Mini Detail</option>
-                    <option value="Full Detail">Full Detail</option>
-                    <option value="Paint Correction">Paint Correction</option>
-                    <option value="Ceramic Coating">Ceramic Coating</option>
-                  </select>
                 </label>
 
                 <label className="block">
@@ -441,7 +486,7 @@ export default function BookingPage() {
                   className="relative w-full overflow-hidden rounded-2xl bg-white p-3 font-bold text-black transition duration-300 hover:opacity-95 disabled:opacity-60"
                 >
                   <span className="relative z-10">
-                    {loading ? "Submitting..." : "Submit Booking"}
+                    {loading ? "Submitting..." : "Submit Enquiry"}
                   </span>
 
                   <span className="pointer-events-none absolute inset-0">

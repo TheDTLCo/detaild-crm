@@ -18,7 +18,8 @@ export async function POST(req) {
     } = body
 
     await resend.emails.send({
-      from: "The DTL Co. <onboarding@resend.dev>",
+      from: "The DTL Co. <admin@thedtlco.com>",
+      replyto: "admin@thedtlco.com",
       to: customer_email,
       subject: "Your detailing quote enquiry has been received ✨",
       html: `

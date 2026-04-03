@@ -110,6 +110,7 @@ export async function POST(req) {
     await resend.emails.send({
       from: "The DTL Co. <admin@thedtlco.com>",
       replyto: "admin@thedtlco.com",
+      to: "thedtlco@gmail.com", 
       subject: "🚨 New Quote Enquiry Received",
       html: `
         <div style="font-family: Arial, sans-serif; padding: 24px; background: #f6f6f6; color: #111111;">

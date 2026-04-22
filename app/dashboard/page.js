@@ -142,6 +142,7 @@ function JobCard({
   onMarkPaid,
   onInvoice,
   onDelete,
+  onPostJobEmail,
 }) {
   const total =
     job.pricing_breakdown?.reduce(
@@ -175,6 +176,11 @@ function JobCard({
             <p className="text-sm text-gray-500">
               {job.vehicle || "Vehicle not set"}
             </p>
+            {job.customer_email && (
+              <p className="mt-1 truncate text-xs text-gray-400">
+                {job.customer_email}
+              </p>
+            )}
             <p className="mt-2 text-xs uppercase tracking-[0.25em] text-gray-400">
               {formattedDate}
             </p>
@@ -360,6 +366,16 @@ function JobCard({
             className="rounded-xl bg-red-500 px-3 py-2 text-xs font-semibold text-white transition hover:scale-105 hover:bg-red-600"
           >
             Delete
+          </button>
+
+          <button
+            onClick={async (e) => {
+              e.stopPropagation()
+              await onPostJobEmail(job)
+            }}
+            className="rounded-xl bg-teal-500 px-3 py-2 text-xs font-semibold text-white transition hover:scale-105 hover:bg-teal-400"
+          >
+            Complete + Email
           </button>
         </div>
       </div>
@@ -741,6 +757,7 @@ function JobModal({
 
   const [customer, setCustomer] = useState(job.customer_name || "")
   const [phone, setPhone] = useState(job.customer_phone || "")
+  const [email, setEmail] = useState(job.customer_email || "")
   const [vehicle, setVehicle] = useState(job.vehicle || "")
   const [address, setAddress] = useState(job.job_address || "")
   const [customerNotes, setCustomerNotes] = useState(job.customer_notes || "")
@@ -780,6 +797,7 @@ function JobModal({
     await onUpdate(job.id, {
       customer_name: customer,
       customer_phone: phone,
+      customer_email: email,
       vehicle,
       job_address: address,
       customer_notes: customerNotes,
@@ -896,6 +914,19 @@ function JobModal({
                   <input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    className="w-full rounded-lg border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-1 block text-sm font-semibold">
+                    Customer Email
+                  </span>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="customer@email.com"
                     className="w-full rounded-lg border bg-gray-50 p-3 text-black dark:bg-gray-700 dark:text-white"
                   />
                 </label>
@@ -1203,6 +1234,7 @@ function JobModal({
                     ...job,
                     customer_name: customer,
                     customer_phone: phone,
+                    customer_email: email,
                     vehicle,
                     job_address: address,
                     customer_notes: customerNotes,
@@ -1295,6 +1327,7 @@ export default function DashboardPage() {
       {
         customer_name: "New Customer",
         customer_phone: "",
+        customer_email: "",
         vehicle: "Vehicle",
         job_address: "",
         customer_notes: "",
@@ -1348,11 +1381,10 @@ export default function DashboardPage() {
       .eq("id", id)
 
     if (error) {
-      alert("Failed to mark job done: " + error.message)
-      return
+      throw new Error(error.message)
     }
 
-    fetchJobs()
+    await fetchJobs()
   }
 
   const markJobPaid = async (id) => {
@@ -1367,6 +1399,38 @@ export default function DashboardPage() {
     }
 
     fetchJobs()
+  }
+
+  const sendPostJobEmail = async (job) => {
+    if (!job.customer_email) {
+      alert("No customer email added for this job.")
+      return
+    }
+
+    try {
+      const res = await fetch("/api/send-post-job-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customer_name: job.customer_name,
+          customer_email: job.customer_email,
+          vehicle: job.vehicle,
+          service: job.job_details?.[0] || "",
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) throw new Error(data.error || "Failed to send post-job email")
+
+      await markJobDone(job.id)
+      alert("Job marked complete and post-job email sent ✅")
+    } catch (err) {
+      console.error(err)
+      alert(err.message || "Failed to send post-job email ❌")
+    }
   }
 
   const openCall = (phone) => {
@@ -2093,6 +2157,7 @@ export default function DashboardPage() {
                           onMarkPaid={markJobPaid}
                           onInvoice={generateInvoice}
                           onDelete={deleteJob}
+                          onPostJobEmail={sendPostJobEmail}
                         />
                       ))}
                     </div>
@@ -2187,6 +2252,7 @@ export default function DashboardPage() {
                     onMarkPaid={markJobPaid}
                     onInvoice={generateInvoice}
                     onDelete={deleteJob}
+                    onPostJobEmail={sendPostJobEmail}
                   />
                 ))}
               </div>

@@ -296,8 +296,7 @@ export default function BookingPage() {
             <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
               <h3 className="text-lg font-semibold">Premium Focus</h3>
               <p className="mt-3 text-sm leading-6 text-gray-400">
-                Built around finish quality, refinement, and protection rather
-                than rushed volume-based work.
+                Built around finish quality, refinement, and protection.
               </p>
             </div>
           </RevealSection>

@@ -53,12 +53,12 @@ export async function POST(req) {
 
               <h3>⭐ Leave a Review</h3>
               <p style="color:#c9c9c9;">
-                If you’re happy with the result, a quick Google review really helps support the business.
+                If you’re happy with the result, we'd really appreciate a quick 60 second review - it helps a small business like ours grow.
               </p>
 
               <a href="https://www.google.com/search?q=The+DTL+Co.+Auto+Detailing&stick=H4sIAAAAAAAA_-NgU1I1qDAzNzY3MDUyMjM3MUwyMrC0MqhINbVMTUwzT0o1Tk5KNkw2XMQqFZKRquAS4qPgnK-n4Fhakq_gklqSmJmTmZcOAIcdnvpGAAAA&hl=en-GB&mat=CZRJDH11BxBDElYBTVDHnj2fYbHPyv0r4zU_ACGwLgVhu9mL5oyiOaXrF-Cyq3SdDL7rZHPBqExjMVy5xD7NVLyOKW97emnbZq9tSC6NYnBb9yi9jn7Mcql6WRYTwHiziA&authuser=0&ved=2ahUKEwjlst_StYGUAxVHS2cHHQ7ADOoQ-MgIegQILhAf#"
                  style="display:inline-block; margin-top:10px; padding:12px 20px; background:#0ea5a5; color:white; text-decoration:none; border-radius:10px;">
-                 If you’re happy with the result, we’d really appreciate a quick 60-second review — it helps a small business like ours grow.
+                 Leave a Review
               </a>
 
               <hr style="border-color:#222; margin: 24px 0;" />
